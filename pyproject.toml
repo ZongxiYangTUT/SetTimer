@@ -1,0 +1,71 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "settimer"
+version = "0.1.0"
+description = "A calm native desktop interval timer for Windows and Linux"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{ name = "ZongxiYangTUT" }]
+dependencies = [
+  "PySide6>=6.8,<7",
+]
+
+[project.optional-dependencies]
+dev = [
+  "coverage[toml]>=7.6",
+  "pyinstaller>=6.10",
+  "pyright>=1.1.390",
+  "ruff>=0.9",
+]
+
+[project.scripts]
+settimer = "settimer.main:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+settimer = [
+  "assets/*",
+  "ui/*.qml",
+  "ui/components/*.qml",
+]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 96
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["B", "E", "F", "I", "RUF", "SIM", "UP", "W"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["settimer"]
+
+[tool.pyright]
+pythonVersion = "3.10"
+typeCheckingMode = "strict"
+include = ["src", "tests"]
+exclude = ["build", "dist"]
+venvPath = "."
+venv = ".venv"
+reportMissingTypeStubs = "warning"
+
+[tool.coverage.run]
+branch = true
+source = ["settimer"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+exclude_also = [
+  "if TYPE_CHECKING:",
+  "if __name__ == .__main__.:",
+]
