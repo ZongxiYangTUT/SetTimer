@@ -7,9 +7,9 @@ Item {
     required property Theme theme
     property real progress: 1.0
     property color phaseColor: theme.accent
+    property string iconName: "activity"
     property string phaseLabel: "训练"
     property string timeText: "01:00"
-    property string detailText: "保持节奏"
     property bool paused: false
 
     implicitHeight: 340
@@ -46,16 +46,25 @@ Item {
 
     Column {
         anchors.centerIn: parent
-        spacing: 10
+        spacing: 9
         width: parent.width - 70
 
-        Text {
-            color: root.phaseColor
-            font.pixelSize: 18
-            font.weight: Font.DemiBold
-            horizontalAlignment: Text.AlignHCenter
-            text: root.phaseLabel
-            width: parent.width
+        Row {
+            anchors.horizontalCenter: parent.horizontalCenter
+            spacing: 8
+
+            LineIcon {
+                color: root.phaseColor
+                height: 19
+                name: root.iconName
+                width: 19
+            }
+            Text {
+                color: root.phaseColor
+                font.pixelSize: 18
+                font.weight: Font.DemiBold
+                text: root.phaseLabel
+            }
         }
 
         Text {
@@ -65,14 +74,6 @@ Item {
             font.weight: Font.DemiBold
             horizontalAlignment: Text.AlignHCenter
             text: root.timeText
-            width: parent.width
-        }
-
-        Text {
-            color: root.theme.textTertiary
-            font.pixelSize: 11
-            horizontalAlignment: Text.AlignHCenter
-            text: root.detailText
             width: parent.width
         }
     }

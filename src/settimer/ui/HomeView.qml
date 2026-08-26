@@ -60,62 +60,39 @@ Item {
                 Layout.fillWidth: true
             }
 
-            RoundButton {
-                id: settingsButton
-
-                flat: true
-                font.pixelSize: 20
-                implicitHeight: 40
-                implicitWidth: 40
-                text: "⚙"
+            IconButton {
+                accessibleName: "设置"
+                iconName: "settings"
+                outlined: false
+                theme: root.theme
                 onClicked: root.appController.openSettings()
-
-                contentItem: Text {
-                    color: root.theme.textSecondary
-                    font: settingsButton.font
-                    horizontalAlignment: Text.AlignHCenter
-                    text: settingsButton.text
-                    verticalAlignment: Text.AlignVCenter
-                }
             }
         }
 
         Item {
-            Layout.preferredHeight: Math.max(38, root.height * 0.065)
+            Layout.preferredHeight: Math.max(42, root.height * 0.08)
         }
 
-        ColumnLayout {
-            Layout.fillWidth: true
-            spacing: 7
+        RowLayout {
+            Layout.alignment: Qt.AlignHCenter
+            spacing: 10
 
-            Label {
+            LineIcon {
+                Layout.preferredHeight: 28
+                Layout.preferredWidth: 28
                 color: root.theme.accent
-                font.capitalization: Font.AllUppercase
-                font.pixelSize: 13
-                font.weight: Font.DemiBold
-                text: "今日训练"
+                name: "activity"
             }
-
             Label {
-                Layout.fillWidth: true
                 color: root.theme.text
-                font.pixelSize: Math.min(34, Math.max(27, root.width * 0.065))
+                font.pixelSize: Math.min(32, Math.max(26, root.width * 0.06))
                 font.weight: Font.Bold
-                text: "准备好，按自己的节奏来。"
-                wrapMode: Text.WordWrap
-            }
-
-            Label {
-                Layout.fillWidth: true
-                color: root.theme.textSecondary
-                font.pixelSize: 14
-                text: "设置一次，接下来的每组交给 SetTimer。"
-                wrapMode: Text.WordWrap
+                text: "训练计划"
             }
         }
 
         Item {
-            Layout.preferredHeight: 27
+            Layout.preferredHeight: 30
         }
 
         Rectangle {
@@ -133,6 +110,7 @@ Item {
                 anchors.right: parent.right
 
                 SettingsRow {
+                    iconName: "activity"
                     label: "训练时间"
                     theme: root.theme
                     transparentBackground: true
@@ -152,6 +130,7 @@ Item {
                 }
 
                 SettingsRow {
+                    iconName: "rest"
                     label: "休息时间"
                     theme: root.theme
                     transparentBackground: true
@@ -171,6 +150,7 @@ Item {
                 }
 
                 SettingsRow {
+                    iconName: "sets"
                     label: "训练组数"
                     theme: root.theme
                     transparentBackground: true
@@ -194,20 +174,32 @@ Item {
                 Layout.preferredWidth: 30
                 color: root.theme.borderStrong
             }
+            LineIcon {
+                Layout.preferredHeight: 16
+                Layout.preferredWidth: 16
+                color: root.theme.textTertiary
+                name: "clock"
+            }
             Label {
                 color: root.theme.textTertiary
                 font.pixelSize: 12
                 text: root.appController.sessionEstimate
             }
-            Label {
+            Rectangle {
+                Layout.preferredHeight: 14
+                Layout.preferredWidth: 1
+                color: root.theme.borderStrong
+            }
+            LineIcon {
+                Layout.preferredHeight: 16
+                Layout.preferredWidth: 16
                 color: root.theme.textTertiary
-                font.pixelSize: 11
-                text: "•"
+                name: "sets"
             }
             Label {
                 color: root.theme.textTertiary
                 font.pixelSize: 12
-                text: `${root.appController.setCount} 组训练`
+                text: `${root.appController.setCount} 组`
             }
             Rectangle {
                 Layout.preferredHeight: 1
@@ -223,18 +215,11 @@ Item {
 
         PrimaryButton {
             Layout.fillWidth: true
-            text: "开始训练"
+            iconName: "play"
+            text: "开始"
             theme: root.theme
             variant: "primary"
             onClicked: root.appController.startSession()
-        }
-
-        Label {
-            Layout.alignment: Qt.AlignHCenter
-            Layout.topMargin: 10
-            color: root.theme.textTertiary
-            font.pixelSize: 11
-            text: "按 Space 也可以开始"
         }
     }
 

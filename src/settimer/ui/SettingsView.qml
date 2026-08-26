@@ -18,23 +18,14 @@ Item {
             Layout.fillWidth: true
             Layout.preferredHeight: 42
 
-            RoundButton {
-                id: backButton
-
-                flat: true
-                font.pixelSize: 26
+            IconButton {
+                accessibleName: "返回"
+                iconName: "back"
                 implicitHeight: 40
                 implicitWidth: 40
-                text: "‹"
+                outlined: false
+                theme: root.theme
                 onClicked: root.appController.closeSettings()
-
-                contentItem: Text {
-                    color: root.theme.textSecondary
-                    font: backButton.font
-                    horizontalAlignment: Text.AlignHCenter
-                    text: backButton.text
-                    verticalAlignment: Text.AlignVCenter
-                }
             }
             Label {
                 Layout.fillWidth: true
@@ -94,6 +85,7 @@ Item {
                         width: parent.width
 
                         ChoiceSettingRow {
+                            iconName: "hourglass"
                             label: "开始前倒计时"
                             labels: ["关", "3 秒", "5 秒"]
                             selected: root.appController.preparationSeconds.toString()
@@ -109,7 +101,7 @@ Item {
                         }
                         ToggleSettingRow {
                             checked: root.appController.resumeCountdownEnabled
-                            hint: "继续前给你 3 秒重新就位"
+                            iconName: "restart"
                             label: "继续前倒计时"
                             theme: root.theme
                             width: parent.width - parent.leftPadding - parent.rightPadding
@@ -122,6 +114,7 @@ Item {
                         }
                         ToggleSettingRow {
                             checked: root.appController.countdownEnabled
+                            iconName: "bell"
                             label: "最后 3 秒提示"
                             theme: root.theme
                             width: parent.width - parent.leftPadding - parent.rightPadding
@@ -158,7 +151,7 @@ Item {
 
                         ToggleSettingRow {
                             checked: root.appController.voiceEnabled
-                            hint: "训练中用中文播报阶段"
+                            iconName: "microphone"
                             label: "语音播报"
                             theme: root.theme
                             width: parent.width - parent.leftPadding - parent.rightPadding
@@ -171,6 +164,7 @@ Item {
                         }
                         ToggleSettingRow {
                             checked: root.appController.soundEnabled
+                            iconName: "volume"
                             label: "提示音"
                             theme: root.theme
                             width: parent.width - parent.leftPadding - parent.rightPadding
@@ -206,6 +200,7 @@ Item {
                         width: parent.width
 
                         ChoiceSettingRow {
+                            iconName: "theme"
                             label: "主题"
                             labels: ["系统", "浅色", "深色"]
                             selected: root.appController.themePreference
@@ -221,7 +216,7 @@ Item {
                         }
                         ToggleSettingRow {
                             checked: root.appController.alwaysOnTop
-                            hint: "适合边看视频边训练"
+                            iconName: "pin"
                             label: "窗口始终置顶"
                             theme: root.theme
                             width: parent.width - parent.leftPadding - parent.rightPadding
@@ -229,86 +224,19 @@ Item {
                         }
                     }
                 }
-
-                Item {
-                    height: 14
-                    width: 1
-                }
-                Label {
-                    color: root.theme.textSecondary
-                    font.pixelSize: 12
-                    font.weight: Font.DemiBold
-                    leftPadding: 4
-                    text: "快捷键"
-                }
-                Rectangle {
-                    border.color: root.theme.border
-                    border.width: 1
-                    color: root.theme.surface
-                    height: shortcuts.implicitHeight + 28
-                    radius: root.theme.radiusLarge
-                    width: parent.width
-
-                    GridLayout {
-                        id: shortcuts
-
-                        anchors.left: parent.left
-                        anchors.right: parent.right
-                        anchors.top: parent.top
-                        anchors.margins: 16
-                        columns: 2
-                        columnSpacing: 18
-                        rowSpacing: 10
-
-                        Label {
-                            color: root.theme.textSecondary
-                            text: "开始 / 暂停 / 继续"
-                        }
-                        Label {
-                            Layout.alignment: Qt.AlignRight
-                            color: root.theme.textTertiary
-                            text: "Space"
-                        }
-                        Label {
-                            color: root.theme.textSecondary
-                            text: "全屏"
-                        }
-                        Label {
-                            Layout.alignment: Qt.AlignRight
-                            color: root.theme.textTertiary
-                            text: "F"
-                        }
-                        Label {
-                            color: root.theme.textSecondary
-                            text: "静音"
-                        }
-                        Label {
-                            Layout.alignment: Qt.AlignRight
-                            color: root.theme.textTertiary
-                            text: "M"
-                        }
-                        Label {
-                            color: root.theme.textSecondary
-                            text: "返回 / 取消"
-                        }
-                        Label {
-                            Layout.alignment: Qt.AlignRight
-                            color: root.theme.textTertiary
-                            text: "Esc"
-                        }
-                    }
-                }
-
-                Label {
-                    color: root.theme.textTertiary
-                    font.pixelSize: 11
-                    horizontalAlignment: Text.AlignHCenter
-                    text: "SetTimer 0.1.0 · 为按组训练而设计"
-                    width: parent.width
-                }
             }
 
             ScrollBar.vertical: ScrollBar {
+                id: settingsScrollBar
+
+                background: Item {}
+                contentItem: Rectangle {
+                    color: root.theme.borderStrong
+                    implicitWidth: 4
+                    opacity: settingsScrollBar.active ? 0.9 : 0.55
+                    radius: width / 2
+                }
+                implicitWidth: 6
                 policy: ScrollBar.AsNeeded
             }
         }

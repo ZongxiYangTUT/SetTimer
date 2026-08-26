@@ -1,49 +1,40 @@
 # SetTimer
 
-SetTimer 是一款原生 Windows / Linux 桌面间歇计时器。配置训练时长、休息时长和组数后，应用会自动完成准备、训练、休息、下一组和完成提醒。
+SetTimer 是一款原生 Windows 桌面间歇计时器。配置训练时长、休息时长和组数后，应用会自动完成准备、训练、休息、下一组和完成提醒。
 
 当前版本使用 Python、PySide6 和 Qt Quick/QML 实现，不依赖浏览器、WebView 或本地服务。
+当前开发、测试、打包和发布只面向 Windows 10/11；Linux 支持暂缓。
 
 ## 功能
 
 - 准备、训练、休息、暂停和完成状态清晰可见；
+- 以图标、状态色和进度动画为主要反馈，减少非必要说明文字；
 - 训练时间、休息时间、训练组数和准备倒计时可配置；
 - 最后 3 秒提示、阶段提示音和可选中文语音播报；
 - 暂停后可直接继续，或使用 3 秒继续倒计时；
 - 浅色、深色和跟随系统主题；
 - 窗口置顶、训练页全屏和活动期间防休眠；
 - 设置使用 Qt `QSettings` 自动保存；
-- 内置 Noto Sans SC，避免 Linux 缺少中文字体时显示方框；
+- 内置 Noto Sans SC，确保中文显示一致；
 - `Space`、`R`、`Esc`、`F`、`M` 桌面快捷键。
 
 计时核心使用注入的单调时钟和绝对截止时间。界面刷新延迟不会延长阶段，暂停/继续也不会累计漂移。
 
-## 开发环境
+## Windows 开发环境
 
-需要 Python 3.10 或更高版本。
-
-```bash
-python3 -m venv .venv
-.venv/bin/python -m pip install --upgrade pip
-.venv/bin/python -m pip install -e '.[dev]'
-make run
-```
-
-Windows PowerShell 使用：
+需要 Windows 10/11 和 Python 3.10 或更高版本。在 PowerShell 中执行：
 
 ```powershell
-py -3.10 -m venv .venv
+py -3 -m venv .venv
 .venv\Scripts\python -m pip install --upgrade pip
 .venv\Scripts\python -m pip install -e ".[dev]"
 .venv\Scripts\python -m settimer
 ```
 
-Linux 的中文语音依赖系统可用的 Qt 文本转语音后端；Ubuntu 可选安装 `speech-dispatcher`。没有语音后端时，计时和提示音仍可正常工作。
-
 ## 检查与测试
 
-```bash
-make check
+```powershell
+.\scripts\check.ps1
 ```
 
 该命令执行：
@@ -55,21 +46,22 @@ make check
 
 测试使用可控的假时钟，不包含真实 `sleep()`。如需查看分支覆盖率：
 
-```bash
-make coverage
+```powershell
+.venv\Scripts\python -m coverage run -m unittest discover -s tests
+.venv\Scripts\python -m coverage report
 ```
+
+每项开发完成后应同步整理相关文档，使用 Conventional Commits 创建聚焦提交，并将当前分支推送到已配置的远端。
 
 ## 打包
 
-在目标平台执行：
+在 Windows PowerShell 中执行：
 
-```bash
-make package
+```powershell
+.\scripts\package.ps1
 ```
 
-PyInstaller 会先运行完整质量检查，再将当前平台版本输出到 `dist/SetTimer/`。Windows 构建会生成 Windows 可执行文件，Linux 构建会生成 Linux 目录分发包；发布包应分别在对应平台构建和验证。
-
-部分精简 Linux/WSL 环境缺少 Qt XCB 或语音系统库。正式 Linux 构建应在带桌面运行库的目标发行版或匹配的构建容器中完成。
+PyInstaller 会先运行完整质量检查，再将 Windows 版本输出到 `dist/SetTimer/`。发布包应在 Windows 目标环境中构建和验证。
 
 ## 快捷键
 

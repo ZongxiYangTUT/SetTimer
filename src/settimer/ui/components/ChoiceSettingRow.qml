@@ -7,14 +7,28 @@ Item {
     required property Theme theme
     required property list<string> labels
     required property list<string> values
+    property string iconName: ""
     property string label: ""
     property string selected: ""
     signal chosen(string value)
 
     implicitHeight: 64
 
-    Text {
+    LineIcon {
+        id: rowIcon
+
         anchors.left: parent.left
+        anchors.verticalCenter: parent.verticalCenter
+        color: root.theme.textSecondary
+        height: 20
+        name: root.iconName
+        visible: root.iconName.length > 0
+        width: 20
+    }
+
+    Text {
+        anchors.left: rowIcon.visible ? rowIcon.right : parent.left
+        anchors.leftMargin: rowIcon.visible ? 12 : 0
         anchors.right: choice.left
         anchors.rightMargin: 12
         anchors.verticalCenter: parent.verticalCenter

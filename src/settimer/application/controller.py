@@ -129,20 +129,6 @@ class AppController(QObject):
         return labels.get(self._snapshot.phase, "")
 
     @Property(str, notify=state_changed)
-    def phase_detail(self) -> str:
-        if self._resume_count > 0:
-            return "准备回到训练"
-        if self._snapshot.phase is TimerPhase.PAUSED:
-            return "计时已暂停"
-        details = {
-            TimerPhase.PREPARING: "深呼吸，准备就位",  # noqa: RUF001
-            TimerPhase.WORK: "保持节奏",
-            TimerPhase.REST: "放松呼吸",
-        }
-        active_phase = self._snapshot.active_phase
-        return details.get(active_phase, "") if active_phase is not None else ""
-
-    @Property(str, notify=state_changed)
     def remaining_text(self) -> str:
         return (
             str(self._resume_count)

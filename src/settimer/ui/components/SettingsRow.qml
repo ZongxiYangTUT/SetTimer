@@ -6,6 +6,7 @@ AbstractButton {
     id: root
 
     required property Theme theme
+    property string iconName: ""
     property string label: ""
     property string hint: ""
     property string value: ""
@@ -16,10 +17,23 @@ AbstractButton {
     hoverEnabled: true
 
     contentItem: Item {
+        LineIcon {
+            id: rowIcon
+
+            anchors.left: parent.left
+            anchors.verticalCenter: parent.verticalCenter
+            color: root.theme.textSecondary
+            height: 20
+            name: root.iconName
+            visible: root.iconName.length > 0
+            width: 20
+        }
+
         Text {
             id: labelText
 
-            anchors.left: parent.left
+            anchors.left: rowIcon.visible ? rowIcon.right : parent.left
+            anchors.leftMargin: rowIcon.visible ? 12 : 0
             anchors.right: valueText.left
             anchors.top: root.hint.length > 0 ? parent.top : undefined
             anchors.verticalCenter: root.hint.length === 0 ? parent.verticalCenter : undefined
@@ -32,7 +46,7 @@ AbstractButton {
         }
 
         Text {
-            anchors.left: parent.left
+            anchors.left: labelText.left
             anchors.right: valueText.left
             anchors.top: labelText.bottom
             anchors.topMargin: 3

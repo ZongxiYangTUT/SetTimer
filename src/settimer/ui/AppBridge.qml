@@ -11,7 +11,6 @@ QtObject {
     readonly property int screen: backend.screen
     readonly property string phaseKey: backend.phase_key
     readonly property string phaseLabel: backend.phase_label
-    readonly property string phaseDetail: backend.phase_detail
     readonly property string remainingText: backend.remaining_text
     readonly property string totalRemainingText: backend.total_remaining_text
     readonly property string elapsedText: backend.elapsed_text

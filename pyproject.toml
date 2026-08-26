@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "settimer"
 version = "0.1.0"
-description = "A calm native desktop interval timer for Windows and Linux"
+description = "A calm native Windows desktop interval timer"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"

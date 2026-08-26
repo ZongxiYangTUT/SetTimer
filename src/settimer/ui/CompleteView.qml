@@ -35,12 +35,13 @@ Item {
                 radius: 41
                 width: 82
 
-                Label {
+                LineIcon {
                     anchors.centerIn: parent
                     color: root.theme.accentInk
-                    font.pixelSize: 42
-                    font.weight: Font.DemiBold
-                    text: "✓"
+                    height: 42
+                    name: "check"
+                    strokeWidth: 2.2
+                    width: 42
                 }
             }
         }
@@ -48,25 +49,10 @@ Item {
         Label {
             Layout.alignment: Qt.AlignHCenter
             Layout.topMargin: 28
-            color: root.theme.accent
-            font.pixelSize: 13
-            font.weight: Font.DemiBold
-            text: "做得漂亮"
-        }
-        Label {
-            Layout.alignment: Qt.AlignHCenter
-            Layout.topMargin: 8
             color: root.theme.text
             font.pixelSize: 34
             font.weight: Font.Bold
             text: "训练完成"
-        }
-        Label {
-            Layout.alignment: Qt.AlignHCenter
-            Layout.topMargin: 8
-            color: root.theme.textSecondary
-            font.pixelSize: 14
-            text: "今天的每一组都完成了。"
         }
 
         Rectangle {
@@ -86,7 +72,15 @@ Item {
 
                 ColumnLayout {
                     Layout.fillWidth: true
-                    spacing: 4
+                    spacing: 6
+
+                    LineIcon {
+                        Layout.alignment: Qt.AlignHCenter
+                        Layout.preferredHeight: 18
+                        Layout.preferredWidth: 18
+                        color: root.theme.textTertiary
+                        name: "sets"
+                    }
 
                     Label {
                         Layout.alignment: Qt.AlignHCenter
@@ -94,12 +88,6 @@ Item {
                         font.pixelSize: 23
                         font.weight: Font.DemiBold
                         text: root.appController.sessionSetCount
-                    }
-                    Label {
-                        Layout.alignment: Qt.AlignHCenter
-                        color: root.theme.textTertiary
-                        font.pixelSize: 11
-                        text: "训练组数"
                     }
                 }
                 Rectangle {
@@ -109,7 +97,15 @@ Item {
                 }
                 ColumnLayout {
                     Layout.fillWidth: true
-                    spacing: 4
+                    spacing: 6
+
+                    LineIcon {
+                        Layout.alignment: Qt.AlignHCenter
+                        Layout.preferredHeight: 18
+                        Layout.preferredWidth: 18
+                        color: root.theme.textTertiary
+                        name: "clock"
+                    }
 
                     Label {
                         Layout.alignment: Qt.AlignHCenter
@@ -117,12 +113,6 @@ Item {
                         font.pixelSize: 23
                         font.weight: Font.DemiBold
                         text: root.appController.elapsedText
-                    }
-                    Label {
-                        Layout.alignment: Qt.AlignHCenter
-                        color: root.theme.textTertiary
-                        font.pixelSize: 11
-                        text: "总用时"
                     }
                 }
             }
@@ -137,6 +127,7 @@ Item {
 
             PrimaryButton {
                 Layout.fillWidth: true
+                iconName: "restart"
                 text: "再来一次"
                 theme: root.theme
                 variant: "primary"
@@ -144,6 +135,7 @@ Item {
             }
             PrimaryButton {
                 Layout.fillWidth: true
+                iconName: "check"
                 text: "完成"
                 theme: root.theme
                 variant: "ghost"

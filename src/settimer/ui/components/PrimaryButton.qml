@@ -6,6 +6,8 @@ Button {
     id: root
 
     required property Theme theme
+    property string iconName: ""
+    property real iconSize: 18
     property string variant: "secondary"
     property color fillColor: {
         if (variant === "primary")
@@ -28,14 +30,27 @@ Button {
     hoverEnabled: true
     scale: down ? 0.97 : 1.0
 
-    contentItem: Text {
-        color: root.enabled ? root.labelColor : root.theme.textTertiary
-        elide: Text.ElideRight
-        font.pixelSize: 14
-        font.weight: Font.DemiBold
-        horizontalAlignment: Text.AlignHCenter
-        text: root.text
-        verticalAlignment: Text.AlignVCenter
+    contentItem: Item {
+        Row {
+            anchors.centerIn: parent
+            spacing: root.iconName.length > 0 && root.text.length > 0 ? 8 : 0
+
+            LineIcon {
+                color: root.enabled ? root.labelColor : root.theme.textTertiary
+                height: root.iconSize
+                name: root.iconName
+                visible: root.iconName.length > 0
+                width: root.iconSize
+            }
+
+            Text {
+                color: root.enabled ? root.labelColor : root.theme.textTertiary
+                font.pixelSize: 14
+                font.weight: Font.DemiBold
+                text: root.text
+                visible: root.text.length > 0
+            }
+        }
     }
 
     background: Rectangle {

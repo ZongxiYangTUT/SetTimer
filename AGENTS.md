@@ -2,7 +2,7 @@
 
 ## 1. Project Definition
 
-SetTimer is a **desktop application** for Windows and Linux.
+SetTimer is a **Windows desktop application**.
 
 It is not a website, web application, browser application, or server product.
 
@@ -25,14 +25,19 @@ The application should feel like a polished native desktop utility rather than a
 
 ## 2. Platform Scope
 
-Supported platforms:
+The current supported and release platform is:
 
 ```text
-Windows
+Windows 10 / Windows 11
+```
+
+Deferred and not part of current implementation, testing, packaging, or release work:
+
+```text
 Linux
 ```
 
-Not currently in scope:
+Also not currently in scope:
 
 ```text
 Web
@@ -43,7 +48,9 @@ Browser extension
 Server deployment
 ```
 
-Do not introduce architecture for unsupported platforms unless a concrete requirement is added.
+Existing Linux-compatible code may remain when it does not obstruct Windows work, but agents must not
+spend time on cross-platform abstractions, Linux-specific fixes, packaging, or validation until the
+project direction changes explicitly.
 
 ---
 
@@ -136,7 +143,12 @@ It does **not** mean copying Apple assets or reproducing iOS pixel-for-pixel.
 
 The goal is:
 
-> iPhone-like interaction quality on a Windows/Linux desktop application.
+> iPhone-like interaction quality in a native Windows desktop application.
+
+The interface must be icon-led. Use recognizable icons, state color, shape, progress, and motion for
+feedback before adding explanatory prose. Keep only the short text needed to identify timer state,
+values, settings, confirmations, or otherwise ambiguous actions. Icon-only controls must expose a
+tooltip and an accessible name.
 
 ---
 
@@ -148,7 +160,7 @@ When engineering choices conflict, use this priority order:
 2. Interaction clarity
 3. Application reliability
 4. Desktop usability
-5. Cross-platform behavior
+5. Windows integration
 6. Testability
 7. Simplicity
 8. Performance
@@ -809,9 +821,13 @@ Do not create a huge design-system framework for this small project.
 
 # Platform Rules
 
-## 33. Windows / Linux Isolation
+## 33. Windows-First Platform Policy
 
-Platform-specific behavior should be isolated.
+Implement, test, package, and release for Windows first. Cross-platform behavior is not a current
+requirement. Do not add an abstraction solely to support Linux or another deferred platform.
+
+Windows-specific behavior should still be isolated from the timer domain so that timer correctness
+and deterministic tests remain independent of operating-system APIs.
 
 Potential adapters:
 
@@ -824,7 +840,7 @@ platform/
 └── desktop/
 ```
 
-Core domain code must not contain platform-specific branching.
+Core domain code must not contain Windows-specific branching.
 
 ---
 
@@ -843,9 +859,8 @@ Use Qt/platform APIs to resolve application data and configuration locations.
 
 ## 35. Fonts
 
-Do not assume one specific system font exists on both platforms.
-
-Prefer an appropriate fallback stack or bundled application-safe strategy that respects licensing.
+Prefer Qt's Windows system-font behavior or a bundled application-safe strategy that respects
+licensing.
 
 Do not distribute proprietary system fonts with the repository.
 
@@ -860,11 +875,10 @@ Dependencies must be justified.
 Before adding a production dependency:
 
 1. Check whether Qt/current libraries already provide the functionality.
-2. Confirm Windows support.
-3. Confirm Linux support.
-4. Check maintenance status.
-5. Check licensing.
-6. Assess package size and complexity.
+2. Confirm Windows 10/11 support.
+3. Check maintenance status.
+4. Check licensing.
+5. Assess package size and complexity.
 
 Do not add a large dependency for a trivial function.
 
@@ -1281,13 +1295,11 @@ Keep diffs easy to review.
 
 The project should expose one canonical local quality command.
 
-Preferred example:
+Canonical Windows command:
 
 ```text
-make check
+.\scripts\check.ps1
 ```
-
-or an equivalent project script.
 
 It should run applicable checks:
 
@@ -1313,16 +1325,11 @@ A task is not complete while required checks fail.
 
 ## 56. Build Validation
 
-Changes affecting desktop UI or packaging must be validated by building or launching the application when practical.
+Changes affecting desktop UI or packaging must be validated by building or launching the application
+on Windows when practical.
 
-The application should eventually be tested in CI on:
-
-```text
-Windows
-Linux
-```
-
-Platform-specific problems should not be deferred until release.
+The application should be tested and packaged on Windows. Linux build and runtime failures are not a
+current release blocker.
 
 ---
 
@@ -1367,13 +1374,20 @@ An agent must:
 5. Run relevant tests.
 6. Run the full quality gate when practical.
 7. Review the final diff.
-8. Report:
+8. Update README and other relevant documentation so it matches delivered behavior and current
+   project direction.
+9. Create a focused Conventional Commit after required checks pass.
+10. Push the current branch to its configured remote unless pushing is blocked by credentials,
+    permissions, connectivity, or an explicit user instruction not to push.
+11. Report:
    - changed behavior
    - changed files
    - tests added/updated
    - checks executed
+   - commit hash and push result
    - known limitations
 
+Do not leave completed requested work uncommitted or unpushed without reporting the concrete blocker.
 Never claim a check passed if it was not actually run.
 
 ---
@@ -1394,7 +1408,8 @@ Do not:
 - place timer business logic in QML
 - use real `sleep()` in timer unit tests
 - couple timer state directly to speech implementation
-- scatter Windows/Linux branches through domain code
+- place Windows-specific branching in domain code
+- spend task time on deferred Linux support without an explicit requirement
 - add dependencies without a concrete reason
 - silently swallow exceptions
 - disable tests to obtain a green build
@@ -1423,6 +1438,7 @@ A task is complete only when:
 - build succeeds where applicable
 - no unrelated files were changed
 - documentation is updated when necessary
+- the change is committed and pushed unless a concrete blocker was reported
 
 ---
 
@@ -1448,7 +1464,7 @@ For UI changes, also verify:
 - layout works at expected desktop window sizes
 - keyboard interactions remain usable
 - animations do not block domain transitions
-- Windows/Linux assumptions were not introduced accidentally
+- Windows behavior and expected desktop window sizes were validated
 
 ---
 
@@ -1456,7 +1472,7 @@ For UI changes, also verify:
 
 SetTimer should be developed as:
 
-> **a small, polished Windows/Linux desktop timer with iPhone-like interaction quality**
+> **a small, polished Windows desktop timer with iPhone-like interaction quality**
 
 not as:
 

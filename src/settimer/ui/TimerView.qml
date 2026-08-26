@@ -17,6 +17,15 @@ Item {
     }
 
     readonly property color phaseColor: theme.phaseColor(appController.phaseKey)
+    readonly property string phaseIcon: {
+        if (appController.resumeCount > 0)
+            return "play";
+        if (appController.paused)
+            return "pause";
+        if (appController.preparing)
+            return "hourglass";
+        return appController.phaseKey === "rest" ? "rest" : "activity";
+    }
 
     Rectangle {
         anchors.centerIn: parent
@@ -77,28 +86,27 @@ Item {
                 Layout.fillWidth: true
             }
 
-            RoundButton {
-                id: fullscreenButton
+            RowLayout {
+                spacing: 8
 
-                flat: false
-                font.pixelSize: 12
-                implicitHeight: 40
-                implicitWidth: 52
-                text: "全屏"
-                onClicked: root.fullscreenRequested()
-
-                contentItem: Text {
-                    color: root.theme.textSecondary
-                    font: fullscreenButton.font
-                    horizontalAlignment: Text.AlignHCenter
-                    text: fullscreenButton.text
-                    verticalAlignment: Text.AlignVCenter
+                IconButton {
+                    accessibleName: root.appController.muted ? "恢复声音" : "静音"
+                    fillColor: root.appController.muted ? root.theme.accentSoft : root.theme.surface
+                    iconColor: root.appController.muted ? root.theme.accent : root.theme.textSecondary
+                    iconName: root.appController.muted ? "volume-off" : "volume"
+                    implicitHeight: 40
+                    implicitWidth: 40
+                    theme: root.theme
+                    onClicked: root.appController.toggleMuted()
                 }
-                background: Rectangle {
-                    border.color: root.theme.border
-                    border.width: 1
-                    color: root.theme.surface
-                    radius: root.theme.radiusMedium
+
+                IconButton {
+                    accessibleName: "全屏"
+                    iconName: "expand"
+                    implicitHeight: 40
+                    implicitWidth: 40
+                    theme: root.theme
+                    onClicked: root.fullscreenRequested()
                 }
             }
         }
@@ -114,7 +122,7 @@ Item {
             Layout.maximumWidth: 430
             Layout.preferredHeight: Math.min(360, root.height * 0.52)
             Layout.preferredWidth: Layout.preferredHeight
-            detailText: root.appController.phaseDetail
+            iconName: root.phaseIcon
             paused: root.appController.paused
             phaseColor: root.phaseColor
             phaseLabel: root.appController.phaseLabel
@@ -131,30 +139,13 @@ Item {
         RowLayout {
             Layout.alignment: Qt.AlignHCenter
             Layout.preferredHeight: 30
-            spacing: 8
+            spacing: 7
 
-            Rectangle {
-                Layout.preferredHeight: 24
-                Layout.preferredWidth: mutedLabel.implicitWidth + 16
-                border.color: root.theme.border
-                border.width: 1
-                color: root.theme.surface
-                radius: 12
-                visible: root.appController.muted
-
-                Label {
-                    id: mutedLabel
-
-                    anchors.centerIn: parent
-                    color: root.theme.textSecondary
-                    font.pixelSize: 11
-                    text: "静音"
-                }
-            }
-            Label {
+            LineIcon {
+                Layout.preferredHeight: 16
+                Layout.preferredWidth: 16
                 color: root.theme.textTertiary
-                font.pixelSize: 12
-                text: "剩余总时间"
+                name: "clock"
             }
             Label {
                 color: root.theme.textSecondary
@@ -165,25 +156,30 @@ Item {
         }
 
         RowLayout {
-            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignHCenter
             Layout.topMargin: 17
-            spacing: 12
+            spacing: 18
 
-            PrimaryButton {
-                Layout.fillWidth: true
-                Layout.preferredWidth: 1.45
+            IconButton {
+                accessibleName: root.appController.resumeCount > 0 ? "取消继续" : root.appController.paused ? "继续" : "暂停"
                 enabled: root.appController.canPause
                 fillColor: root.phaseColor
-                text: root.appController.resumeCount > 0 ? "取消" : root.appController.paused ? "继续" : "暂停"
+                iconColor: root.theme.accentInk
+                iconName: root.appController.resumeCount > 0 ? "close" : root.appController.paused ? "play" : "pause"
+                implicitHeight: 68
+                implicitWidth: 68
+                outlined: false
                 theme: root.theme
-                variant: "primary"
                 onClicked: root.appController.pauseOrResume()
             }
 
-            PrimaryButton {
-                Layout.fillWidth: true
-                Layout.preferredWidth: 1
-                text: "结束"
+            IconButton {
+                accessibleName: "结束训练"
+                fillColor: root.theme.surface
+                iconColor: root.theme.danger
+                iconName: "stop"
+                implicitHeight: 54
+                implicitWidth: 54
                 theme: root.theme
                 onClicked: stopDialog.open()
             }
@@ -196,7 +192,7 @@ Item {
         anchors.centerIn: Overlay.overlay
         closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
         dim: true
-        height: 260
+        height: 232
         modal: true
         padding: 24
         width: Math.min(380, Overlay.overlay ? Overlay.overlay.width - 40 : 380)
@@ -218,12 +214,12 @@ Item {
                 color: root.theme.dangerSoft
                 radius: 23
 
-                Label {
+                LineIcon {
                     anchors.centerIn: parent
                     color: root.theme.danger
-                    font.pixelSize: 24
-                    font.weight: Font.DemiBold
-                    text: "!"
+                    height: 24
+                    name: "stop"
+                    width: 24
                 }
             }
             Label {
@@ -232,15 +228,6 @@ Item {
                 font.pixelSize: 20
                 font.weight: Font.DemiBold
                 text: "结束本次训练？"
-            }
-            Label {
-                Layout.alignment: Qt.AlignHCenter
-                Layout.fillWidth: true
-                color: root.theme.textSecondary
-                font.pixelSize: 13
-                horizontalAlignment: Text.AlignHCenter
-                text: "当前进度将不会继续，但训练设置会保留。"
-                wrapMode: Text.WordWrap
             }
             Item {
                 Layout.fillHeight: true
@@ -251,13 +238,15 @@ Item {
 
                 PrimaryButton {
                     Layout.fillWidth: true
+                    iconName: "close"
                     text: "取消"
                     theme: root.theme
                     onClicked: stopDialog.close()
                 }
                 PrimaryButton {
                     Layout.fillWidth: true
-                    text: "结束训练"
+                    iconName: "stop"
+                    text: "结束"
                     theme: root.theme
                     variant: "danger"
                     onClicked: {
