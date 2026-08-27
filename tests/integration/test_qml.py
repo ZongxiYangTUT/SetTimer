@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 import unittest
 from importlib import resources
 from pathlib import Path
@@ -57,6 +58,17 @@ class QmlSmokeTests(unittest.TestCase):
             QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
             self.application.processEvents()
             controller.shutdown()
+
+    def test_visible_labels_do_not_include_english_explanations(self) -> None:
+        ui_directory = Path(str(resources.files("settimer") / "ui"))
+        english_explanation = re.compile(r'"[^"\n]*\([A-Za-z][A-Za-z /_-]*\)[^"\n]*"')
+
+        for qml_path in ui_directory.rglob("*.qml"):
+            source = qml_path.read_text(encoding="utf-8")
+            self.assertIsNone(
+                english_explanation.search(source),
+                f"界面仍包含英文括注: {qml_path}",
+            )
 
     def test_home_wheel_and_long_press_stop_are_wired(self) -> None:
         controller = AppController(

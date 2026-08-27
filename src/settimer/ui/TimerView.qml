@@ -17,14 +17,14 @@ Item {
     readonly property color phaseSoftColor: pausedState ? theme.pauseSoft : (appController.phaseKey === "rest" ? theme.restSoft : theme.accentSoft)
     readonly property string stateText: {
         if (appController.resumeCount > 0)
-            return "即将继续 (RESUME)";
+            return "即将继续";
         if (appController.paused)
-            return "已暂停 (PAUSED)";
+            return "已暂停";
         if (appController.preparing)
-            return "准备中 (READY)";
+            return "准备中";
         if (appController.phaseKey === "rest")
-            return "休息中 (REST)";
-        return "训练中 (WORK)";
+            return "休息中";
+        return "训练中";
     }
 
     function requestStop(): void {

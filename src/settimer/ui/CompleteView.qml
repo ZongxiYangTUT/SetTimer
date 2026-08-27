@@ -50,7 +50,7 @@ Item {
             color: root.theme.text
             font.pixelSize: 28
             font.weight: Font.Bold
-            text: "训练完成!"
+            text: "训练完成！"
         }
 
         Rectangle {
@@ -108,7 +108,7 @@ Item {
         PrimaryButton {
             Layout.fillWidth: true
             Layout.preferredHeight: 52
-            text: "再来一次 (REPEAT)"
+            text: "再来一次"
             theme: root.theme
             variant: "inverted"
             onClicked: root.appController.startSession()
@@ -118,7 +118,7 @@ Item {
             Layout.alignment: Qt.AlignHCenter
             Layout.preferredHeight: 42
             Layout.preferredWidth: 160
-            text: "返回主页 (BACK)"
+            text: "返回主页"
             theme: root.theme
             variant: "ghost"
             onClicked: root.appController.completeSession()

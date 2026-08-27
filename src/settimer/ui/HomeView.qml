@@ -69,7 +69,7 @@ Item {
             PlanPickerColumn {
                 Layout.fillWidth: true
                 itemCount: 99
-                label: "组数 (SETS)"
+                label: "组数"
                 mode: "sets"
                 objectName: "setPicker"
                 selectedIndex: root.appController.setCount - 1
@@ -80,7 +80,7 @@ Item {
             PlanPickerColumn {
                 Layout.fillWidth: true
                 itemCount: Math.floor((3599 - startSeconds) / stepSeconds) + 1
-                label: "训练 (WORK)"
+                label: "训练"
                 objectName: "workPicker"
                 selectedIndex: Math.floor((root.appController.workSeconds - startSeconds) / stepSeconds)
                 startSeconds: root.appController.workSeconds % stepSeconds === 0 ? stepSeconds : root.appController.workSeconds % stepSeconds
@@ -92,7 +92,7 @@ Item {
             PlanPickerColumn {
                 Layout.fillWidth: true
                 itemCount: Math.floor((3599 - startSeconds) / stepSeconds) + 1
-                label: "休息 (REST)"
+                label: "休息"
                 objectName: "restPicker"
                 selectedIndex: Math.floor((root.appController.restSeconds - startSeconds) / stepSeconds)
                 startSeconds: root.appController.restSeconds % stepSeconds
@@ -137,7 +137,7 @@ Item {
         PrimaryButton {
             Layout.fillWidth: true
             Layout.preferredHeight: 52
-            text: "开始 (START)"
+            text: "开始"
             theme: root.theme
             variant: "inverted"
             onClicked: root.appController.startSession()
