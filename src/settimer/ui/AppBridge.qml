@@ -29,6 +29,12 @@ QtObject {
     readonly property bool resumeCountdownEnabled: backend.resume_countdown_enabled
     readonly property bool countdownEnabled: backend.countdown_enabled
     readonly property bool voiceEnabled: backend.voice_enabled
+    readonly property string voiceId: backend.voice_id
+    readonly property string voiceName: backend.voice_name
+    // qmllint disable prefer-non-var-properties
+    readonly property var voiceIds: backend.voice_ids
+    readonly property var voiceNames: backend.voice_names
+    // qmllint enable prefer-non-var-properties
     readonly property bool soundEnabled: backend.sound_enabled
     readonly property string themePreference: backend.theme
     readonly property bool darkMode: backend.dark_mode
@@ -93,6 +99,12 @@ QtObject {
     }
     function setVoiceEnabled(enabled: bool): void {
         backend.set_voice_enabled(enabled);
+    }
+    function setVoiceId(identifier: string): void {
+        backend.set_voice_id(identifier);
+    }
+    function previewVoice(identifier: string): void {
+        backend.preview_voice(identifier);
     }
     function setSoundEnabled(enabled: bool): void {
         backend.set_sound_enabled(enabled);

@@ -98,6 +98,21 @@ Item {
                             height: 1
                             width: parent.width - parent.leftPadding - parent.rightPadding
                         }
+                        SettingsRow {
+                            objectName: "voiceSettingRow"
+                            iconName: "volume"
+                            label: "播报声音"
+                            theme: root.theme
+                            transparentBackground: true
+                            value: root.appController.voiceName
+                            width: parent.width - parent.leftPadding - parent.rightPadding
+                            onClicked: voicePicker.open()
+                        }
+                        Rectangle {
+                            color: root.theme.border
+                            height: 1
+                            width: parent.width - parent.leftPadding - parent.rightPadding
+                        }
                         ToggleSettingRow {
                             checked: root.appController.countdownEnabled
                             hint: "阶段结束前提示 3、2、1"
@@ -217,18 +232,16 @@ Item {
             }
 
             ScrollBar.vertical: ScrollBar {
-                id: settingsScrollBar
-
-                background: Item {}
-                contentItem: Rectangle {
-                    color: root.theme.borderStrong
-                    implicitWidth: 4
-                    opacity: settingsScrollBar.active ? 0.9 : 0.55
-                    radius: width / 2
-                }
-                implicitWidth: 6
-                policy: ScrollBar.AsNeeded
+                policy: ScrollBar.AlwaysOff
             }
         }
+    }
+
+    VoicePickerDialog {
+        id: voicePicker
+
+        objectName: "voicePickerDialog"
+        appController: root.appController
+        theme: root.theme
     }
 }

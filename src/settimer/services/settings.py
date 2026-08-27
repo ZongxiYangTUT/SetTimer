@@ -25,6 +25,7 @@ class AppSettings:
     resume_countdown: bool = True
     countdown_enabled: bool = True
     voice_enabled: bool = True
+    voice_id: str = "kokoro:3"
     sound_enabled: bool = True
     theme: ThemePreference = ThemePreference.DARK
     always_on_top: bool = False
@@ -62,6 +63,7 @@ class QtSettingsStore:
                 defaults.countdown_enabled,
             ),
             voice_enabled=self._read_bool("audio/voice_enabled", defaults.voice_enabled),
+            voice_id=self._read_voice_id(defaults.voice_id),
             sound_enabled=self._read_bool("audio/sound_enabled", defaults.sound_enabled),
             theme=self._read_theme(defaults.theme),
             always_on_top=self._read_bool("window/always_on_top", defaults.always_on_top),
@@ -76,6 +78,7 @@ class QtSettingsStore:
             ("timer/resume_countdown", settings.resume_countdown),
             ("timer/countdown_enabled", settings.countdown_enabled),
             ("audio/voice_enabled", settings.voice_enabled),
+            ("audio/voice_id", settings.voice_id),
             ("audio/sound_enabled", settings.sound_enabled),
             ("appearance/theme", settings.theme.value),
             ("window/always_on_top", settings.always_on_top),
@@ -123,3 +126,16 @@ class QtSettingsStore:
         except ValueError:
             logger.warning("settings_value_invalid key=appearance/theme value=%r", raw)
             return default
+
+    def _read_voice_id(self, default: str) -> str:
+        raw: object = self._settings.value("audio/voice_id", default)
+        value = str(raw).strip()
+        if value == "system:default":
+            return value
+        prefix, separator, speaker = value.partition(":")
+        if prefix == "kokoro" and separator and speaker.isdecimal():
+            speaker_id = int(speaker)
+            if 3 <= speaker_id <= 102:
+                return value
+        logger.warning("settings_value_invalid key=audio/voice_id value=%r", raw)
+        return default

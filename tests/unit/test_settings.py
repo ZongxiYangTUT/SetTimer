@@ -36,6 +36,7 @@ class QtSettingsStoreTests(unittest.TestCase):
             resume_countdown=False,
             countdown_enabled=False,
             voice_enabled=False,
+            voice_id="kokoro:42",
             sound_enabled=True,
             theme=ThemePreference.DARK,
             always_on_top=True,
@@ -50,6 +51,7 @@ class QtSettingsStoreTests(unittest.TestCase):
         self.qsettings.setValue("session/set_count", "many")
         self.qsettings.setValue("timer/preparation_seconds", 4)
         self.qsettings.setValue("audio/voice_enabled", "no")
+        self.qsettings.setValue("audio/voice_id", "kokoro:999")
         self.qsettings.setValue("appearance/theme", "neon")
 
         loaded = self.store.load()
@@ -59,6 +61,7 @@ class QtSettingsStoreTests(unittest.TestCase):
         self.assertEqual(loaded.set_count, 5)
         self.assertEqual(loaded.preparation_seconds, 3)
         self.assertFalse(loaded.voice_enabled)
+        self.assertEqual(loaded.voice_id, "kokoro:3")
         self.assertEqual(loaded.theme, ThemePreference.DARK)
 
 

@@ -232,6 +232,8 @@ class AppControllerTests(unittest.TestCase):
         self.controller.set_resume_countdown_enabled(False)
         self.controller.set_countdown_enabled(False)
         self.controller.set_voice_enabled(False)
+        self.controller.set_voice_id("fake:voice")
+        self.controller.preview_voice("fake:voice")
         self.controller.set_sound_enabled(False)
         self.controller.set_always_on_top(True)
         self.controller.set_theme("unknown")
@@ -240,10 +242,13 @@ class AppControllerTests(unittest.TestCase):
         self.assertFalse(self.store.settings.resume_countdown)
         self.assertFalse(self.store.settings.countdown_enabled)
         self.assertFalse(self.store.settings.voice_enabled)
+        self.assertEqual(self.store.settings.voice_id, "fake:voice")
+        self.assertEqual(self.controller.voice_name, "测试声音")
+        self.assertEqual(self.speech.previewed, ["fake:voice"])
         self.assertFalse(self.store.settings.sound_enabled)
         self.assertTrue(self.store.settings.always_on_top)
         self.assertEqual(self.store.settings.theme, ThemePreference.LIGHT)
-        self.assertEqual(self.store.save_count, 6)
+        self.assertEqual(self.store.save_count, 7)
 
 
 if __name__ == "__main__":

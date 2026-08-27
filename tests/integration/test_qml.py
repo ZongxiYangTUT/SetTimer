@@ -70,6 +70,55 @@ class QmlSmokeTests(unittest.TestCase):
                 f"界面仍包含英文括注: {qml_path}",
             )
 
+    def test_voice_picker_opens_and_lists_available_voices(self) -> None:
+        speech = FakeSpeech()
+        controller = AppController(
+            clock=FakeClock(),
+            settings_store=MemorySettingsStore(),
+            speech=speech,
+            audio=FakeAudio(),
+            power=FakePowerInhibitor(),
+            history_store=MemoryHistoryStore(),
+            auto_start_updates=False,
+        )
+        engine = QQmlApplicationEngine()
+        ui_directory = Path(str(resources.files("settimer") / "ui"))
+        engine.addImportPath(str(ui_directory))
+        engine.setInitialProperties({"backend": controller})
+
+        try:
+            engine.load(QUrl.fromLocalFile(str(ui_directory / "Main.qml")))
+            self.application.processEvents()
+            roots = engine.rootObjects()
+            self.assertEqual(len(roots), 1)
+            window = cast(QQuickWindow, roots[0])
+            controller.open_settings()
+            QTest.qWait(40)
+
+            voice_row = cast(QQuickItem, window.findChild(QQuickItem, "voiceSettingRow"))
+            center = voice_row.mapToItem(
+                window.contentItem(),
+                QPointF(voice_row.width() / 2, voice_row.height() / 2),
+            ).toPoint()
+            QTest.mouseClick(
+                window,
+                Qt.MouseButton.LeftButton,
+                Qt.KeyboardModifier.NoModifier,
+                center,
+            )
+            QTest.qWait(80)
+
+            dialog = cast(QObject, window.findChild(QObject, "voicePickerDialog"))
+            voice_list = cast(QObject, window.findChild(QObject, "voiceList"))
+            self.assertTrue(dialog.property("visible"))
+            self.assertEqual(voice_list.property("count"), 1)
+            window.setProperty("visible", False)
+        finally:
+            engine.deleteLater()
+            QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+            self.application.processEvents()
+            controller.shutdown()
+
     def test_home_wheel_and_long_press_stop_are_wired(self) -> None:
         controller = AppController(
             clock=FakeClock(),

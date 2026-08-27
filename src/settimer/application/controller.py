@@ -44,7 +44,7 @@ from settimer.services.settings import (
     SettingsStore,
     ThemePreference,
 )
-from settimer.services.speech import QtSpeechService, SpeechPort
+from settimer.services.speech import DesktopSpeechService, SpeechPort
 
 logger = logging.getLogger(__name__)
 
@@ -83,7 +83,11 @@ class AppController(QObject):
         self._engine = TimerEngine(self._clock)
         self._settings_store = settings_store or QtSettingsStore()
         self._settings = self._settings_store.load()
-        speech_service = speech or QtSpeechService()
+        speech_service = speech or DesktopSpeechService(self)
+        self._speech = speech_service
+        voices = speech_service.voice_options()
+        if not speech_service.select_voice(self._settings.voice_id) and voices:
+            speech_service.select_voice(voices[0].identifier)
         audio_service = audio or QtAudioService(self)
         self._announcements = AnnouncementCoordinator(speech_service, audio_service)
         self._power = power or create_power_inhibitor()
@@ -221,6 +225,30 @@ class AppController(QObject):
     @Property(bool, notify=settings_changed)
     def voice_enabled(self) -> bool:
         return self._settings.voice_enabled
+
+    @Property(str, notify=settings_changed)
+    def voice_id(self) -> str:
+        return self._speech.selected_voice_id()
+
+    @Property(str, notify=settings_changed)
+    def voice_name(self) -> str:
+        selected = self._speech.selected_voice_id()
+        return next(
+            (
+                voice.label
+                for voice in self._speech.voice_options()
+                if voice.identifier == selected
+            ),
+            "系统语音",
+        )
+
+    @Property(list, notify=settings_changed)
+    def voice_ids(self) -> list[str]:
+        return [voice.identifier for voice in self._speech.voice_options()]
+
+    @Property(list, notify=settings_changed)
+    def voice_names(self) -> list[str]:
+        return [voice.label for voice in self._speech.voice_options()]
 
     @Property(bool, notify=settings_changed)
     def sound_enabled(self) -> bool:
@@ -406,6 +434,17 @@ class AppController(QObject):
     def set_voice_enabled(self, enabled: bool) -> None:
         self._store_settings(replace(self._settings, voice_enabled=enabled))
 
+    @Slot(str)
+    def set_voice_id(self, identifier: str) -> None:
+        if not self._speech.select_voice(identifier):
+            logger.warning("voice_change_rejected value=%s", identifier)
+            return
+        self._store_settings(replace(self._settings, voice_id=identifier))
+
+    @Slot(str)
+    def preview_voice(self, identifier: str) -> None:
+        self._speech.preview(identifier)
+
     @Slot(bool)
     def set_sound_enabled(self, enabled: bool) -> None:
         self._store_settings(replace(self._settings, sound_enabled=enabled))
@@ -445,6 +484,7 @@ class AppController(QObject):
         if self._screen is Screen.TIMER:
             self._record_session(self._snapshot, completed=False)
         self._announcements.stop()
+        self._speech.shutdown()
         self._power.release()
 
     def _consume(self, events: list[TimerEvent]) -> None:

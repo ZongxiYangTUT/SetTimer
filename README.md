@@ -18,6 +18,7 @@ SetTimer 是一款简洁的 Windows 桌面间歇计时器。滚动选择组数�
 - 使用单调时钟计时，界面卡顿或系统时间变化不会造成倒计时漂移；
 - 支持暂停、继续、长按结束、全屏和窗口置顶；
 - 提供阶段提示音、最后三秒提示和可选中文语音播报；
+- 可安装 Kokoro 离线中文语音包，支持 100 种声音、试听和选择；
 - 自动保存训练历史，支持本周统计和左滑删除。
 
 ## 本地运行
@@ -30,6 +31,16 @@ py -3 -m venv .venv
 .venv\Scripts\python -m pip install -e ".[dev]"
 .venv\Scripts\python -m settimer
 ```
+
+## 离线语音
+
+Kokoro 语音包完全在本机运行。模型压缩包约 140 MB，解压后约 205 MB：
+
+```powershell
+.\scripts\install-kokoro.ps1
+```
+
+安装后重新打开 SetTimer，即可在“设置 → 播报声音”中选择和试听。模型文件保存在用户数据目录，不会写入 Git 仓库；模型缺失或合成失败时会自动使用 Windows 系统语音。
 
 ## 检查与打包
 

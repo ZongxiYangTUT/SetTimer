@@ -3,7 +3,7 @@
 from pathlib import Path
 
 import PySide6
-from PyInstaller.utils.hooks import collect_data_files
+from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs
 
 
 datas = collect_data_files(
@@ -12,13 +12,20 @@ datas = collect_data_files(
 )
 
 pyside_directory = Path(PySide6.__file__).resolve().parent
+sherpa_binaries = collect_dynamic_libs("sherpa_onnx")
 
 analysis = Analysis(
     ["src/settimer/main.py"],
     pathex=["src"],
-    binaries=[],
+    binaries=sherpa_binaries,
     datas=datas,
-    hiddenimports=["PySide6.QtTextToSpeech", "PySide6.QtMultimedia", "PySide6.QtDBus"],
+    hiddenimports=[
+        "PySide6.QtTextToSpeech",
+        "PySide6.QtMultimedia",
+        "PySide6.QtDBus",
+        "sherpa_onnx",
+        "sherpa_onnx.lib._sherpa_onnx",
+    ],
     hookspath=["packaging/hooks"],
     hooksconfig={},
     runtime_hooks=[],

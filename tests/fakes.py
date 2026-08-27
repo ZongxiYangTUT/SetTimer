@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from settimer.services.history import SessionRecord
 from settimer.services.settings import AppSettings
+from settimer.services.speech import SpeechVoice
 
 
 class FakeClock:
@@ -49,12 +50,34 @@ class FakeSpeech:
     def __init__(self) -> None:
         self.messages: list[str] = []
         self.stop_count = 0
+        self.previewed: list[str] = []
+        self.shutdown_count = 0
+        self._voice_id = "fake:voice"
 
     def speak(self, text: str) -> None:
         self.messages.append(text)
 
     def stop(self) -> None:
         self.stop_count += 1
+
+    def voice_options(self) -> tuple[SpeechVoice, ...]:
+        return (SpeechVoice("fake:voice", "测试声音"),)
+
+    def selected_voice_id(self) -> str:
+        return self._voice_id
+
+    def select_voice(self, identifier: str) -> bool:
+        if identifier != "fake:voice":
+            return False
+        self._voice_id = identifier
+        return True
+
+    def preview(self, identifier: str) -> None:
+        if identifier == "fake:voice":
+            self.previewed.append(identifier)
+
+    def shutdown(self) -> None:
+        self.shutdown_count += 1
 
 
 class FakeAudio:
