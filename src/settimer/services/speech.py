@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import logging
 import os
+import re
 import sys
 import threading
 import wave
@@ -25,7 +26,7 @@ from PySide6.QtCore import (
     Slot,
 )
 from PySide6.QtMultimedia import QAudioFormat, QAudioSink, QMediaDevices
-from PySide6.QtTextToSpeech import QTextToSpeech
+from PySide6.QtTextToSpeech import QTextToSpeech, QVoice
 
 logger = logging.getLogger(__name__)
 
@@ -34,12 +35,20 @@ KOKORO_REQUIRED_FILES = (
     "model.int8.onnx",
     "voices.bin",
     "tokens.txt",
+    "lexicon-us-en.txt",
     "lexicon-zh.txt",
     "espeak-ng-data",
+    "phone-zh.fst",
+    "date-zh.fst",
+    "number-zh.fst",
 )
 KOKORO_DEFAULT_VOICE_ID = "kokoro:3"
 SYSTEM_VOICE_ID = "system:default"
 VOICE_PREVIEW_TEXT = "第一组开始，准备训练。"  # noqa: RUF001 - Chinese punctuation
+_ARABIC_NUMBER_PATTERN = re.compile(r"\d+")
+_CHINESE_WHITESPACE_PATTERN = re.compile(r"(?<=[\u3400-\u9fff])\s+(?=[\u3400-\u9fff])")
+_CHINESE_DIGITS = "零一二三四五六七八九"
+_CHINESE_SMALL_UNITS = ("", "十", "百", "千")
 
 
 @dataclass(frozen=True, slots=True)
@@ -87,6 +96,45 @@ def kokoro_voice_options() -> tuple[SpeechVoice, ...]:
     return female + male
 
 
+def _system_voice_identifier(voice: QVoice) -> str:
+    fingerprint = f"{voice.name()}\0{voice.locale().name()}".casefold().encode()
+    digest = hashlib.sha256(fingerprint).hexdigest()[:16]
+    return f"system:{digest}"
+
+
+def _integer_to_chinese(value: int) -> str:
+    if value == 0:
+        return _CHINESE_DIGITS[0]
+    if value >= 10_000:
+        return "".join(_CHINESE_DIGITS[int(digit)] for digit in str(value))
+
+    digits = str(value)
+    result: list[str] = []
+    zero_pending = False
+    for index, digit_text in enumerate(digits):
+        digit = int(digit_text)
+        unit_index = len(digits) - index - 1
+        if digit == 0:
+            if result and any(character != "0" for character in digits[index + 1 :]):
+                zero_pending = True
+            continue
+        if zero_pending:
+            result.append(_CHINESE_DIGITS[0])
+            zero_pending = False
+        if not (digit == 1 and unit_index == 1 and not result):
+            result.append(_CHINESE_DIGITS[digit])
+        result.append(_CHINESE_SMALL_UNITS[unit_index])
+    return "".join(result)
+
+
+def _normalize_kokoro_text(text: str) -> str:
+    normalized = _ARABIC_NUMBER_PATTERN.sub(
+        lambda match: _integer_to_chinese(int(match.group())),
+        text,
+    )
+    return _CHINESE_WHITESPACE_PATTERN.sub("", normalized)
+
+
 def _default_speech_cache_directory() -> Path:
     cache_root = Path(
         QStandardPaths.writableLocation(QStandardPaths.StandardLocation.CacheLocation)
@@ -95,7 +143,7 @@ def _default_speech_cache_directory() -> Path:
 
 
 def _cache_path(cache_directory: Path, text: str, speaker_id: int) -> Path:
-    digest = hashlib.sha256(f"kokoro-v1.1-int8\0{speaker_id}\0{text}".encode()).hexdigest()
+    digest = hashlib.sha256(f"kokoro-v1.1-int8-zh2\0{speaker_id}\0{text}".encode()).hexdigest()
     return cache_directory / f"{digest}.wav"
 
 
@@ -131,11 +179,20 @@ def _create_kokoro_engine(model_directory: Path) -> _OfflineTtsEngine:
                 voices=str(model_directory / "voices.bin"),
                 tokens=str(model_directory / "tokens.txt"),
                 data_dir=str(model_directory / "espeak-ng-data"),
-                lexicon=str(model_directory / "lexicon-zh.txt"),
+                lexicon=",".join(
+                    (
+                        str(model_directory / "lexicon-us-en.txt"),
+                        str(model_directory / "lexicon-zh.txt"),
+                    )
+                ),
             ),
             num_threads=max(1, min(4, os.cpu_count() or 1)),
             debug=False,
-        )
+        ),
+        rule_fsts=",".join(
+            str(model_directory / name)
+            for name in ("phone-zh.fst", "date-zh.fst", "number-zh.fst")
+        ),
     )
     if not config.validate():
         raise RuntimeError("Kokoro model configuration is invalid")
@@ -259,6 +316,9 @@ class DesktopSpeechService(QObject):
     ) -> None:
         super().__init__(parent)
         self._system_engine = self._create_system_engine()
+        self._system_voices: dict[str, QVoice] = {}
+        self._default_system_voice_id = SYSTEM_VOICE_ID
+        system_voice_options = self._load_system_voices()
         self._request_token = 0
         self._selected_voice_id = SYSTEM_VOICE_ID
         self._sink: QAudioSink | None = None
@@ -274,7 +334,7 @@ class DesktopSpeechService(QObject):
         self._worker: _KokoroWorker | None = None
         if kokoro_model_is_complete(resolved_model_directory) and _sherpa_onnx_available():
             resolved_cache_directory.mkdir(parents=True, exist_ok=True)
-            self._voices = kokoro_voice_options()
+            self._voices = system_voice_options + kokoro_voice_options()
             self._selected_voice_id = KOKORO_DEFAULT_VOICE_ID
             self._worker = _KokoroWorker(
                 resolved_model_directory,
@@ -284,7 +344,8 @@ class DesktopSpeechService(QObject):
             self._cache_directory = resolved_cache_directory
             logger.info("kokoro_ready model=%s", resolved_model_directory)
         else:
-            self._voices = (SpeechVoice(SYSTEM_VOICE_ID, self._system_voice_label()),)
+            self._voices = system_voice_options or (SpeechVoice(SYSTEM_VOICE_ID, "系统语音"),)
+            self._selected_voice_id = self._default_system_voice_id
             self._cache_directory = resolved_cache_directory
             logger.info("kokoro_unavailable using Windows speech")
 
@@ -306,14 +367,16 @@ class DesktopSpeechService(QObject):
         return self._selected_voice_id
 
     def select_voice(self, identifier: str) -> bool:
-        if not any(voice.identifier == identifier for voice in self._voices):
+        resolved_identifier = self._resolve_voice_identifier(identifier)
+        if not any(voice.identifier == resolved_identifier for voice in self._voices):
             return False
-        self._selected_voice_id = identifier
+        self._selected_voice_id = resolved_identifier
         return True
 
     def preview(self, identifier: str) -> None:
-        if any(voice.identifier == identifier for voice in self._voices):
-            self._speak_with_voice(VOICE_PREVIEW_TEXT, identifier)
+        resolved_identifier = self._resolve_voice_identifier(identifier)
+        if any(voice.identifier == resolved_identifier for voice in self._voices):
+            self._speak_with_voice(VOICE_PREVIEW_TEXT, resolved_identifier)
 
     def shutdown(self) -> None:
         if self._closed:
@@ -333,35 +396,36 @@ class DesktopSpeechService(QObject):
             try:
                 speaker_id = int(identifier.partition(":")[2])
             except ValueError:
-                self._say_with_system(normalized)
+                self._say_with_system(normalized, self._default_system_voice_id)
                 return
+            kokoro_text = _normalize_kokoro_text(normalized)
             self._worker.submit(
                 _SpeechRequest(
                     token=token,
-                    text=normalized,
+                    text=kokoro_text,
                     speaker_id=speaker_id,
                     output_path=_cache_path(
                         self._cache_directory,
-                        normalized,
+                        kokoro_text,
                         speaker_id,
                     ),
                 )
             )
             return
-        self._say_with_system(normalized)
+        self._say_with_system(normalized, identifier)
 
     @Slot(int, str, str)
     def _on_kokoro_ready(self, token: int, text: str, path: str) -> None:
         if self._closed or token != self._request_token:
             return
         if not self._play_wave(Path(path), token):
-            self._say_with_system(text)
+            self._say_with_system(text, self._default_system_voice_id)
 
     @Slot(int, str, str)
     def _on_kokoro_failed(self, token: int, text: str, _message: str) -> None:
         if self._closed or token != self._request_token:
             return
-        self._say_with_system(text)
+        self._say_with_system(text, self._default_system_voice_id)
 
     def _play_wave(self, path: Path, token: int) -> bool:
         try:
@@ -420,12 +484,39 @@ class DesktopSpeechService(QObject):
             buffer.close()
             buffer.deleteLater()
 
-    def _say_with_system(self, text: str) -> None:
+    def _say_with_system(self, text: str, identifier: str) -> None:
         if self._system_engine is None:
             logger.warning("speech_unavailable no Windows speech engine")
             return
+        voice = self._system_voices.get(identifier)
+        if voice is not None:
+            self._system_engine.setVoice(voice)
         self._system_engine.stop()
         self._system_engine.say(text)
+
+    def _load_system_voices(self) -> tuple[SpeechVoice, ...]:
+        if self._system_engine is None:
+            return ()
+        current_voice = self._system_engine.voice()
+        current_fingerprint = (current_voice.name(), current_voice.locale().name())
+        options: list[SpeechVoice] = []
+        for voice in self._system_engine.availableVoices():
+            identifier = _system_voice_identifier(voice)
+            if identifier in self._system_voices:
+                continue
+            self._system_voices[identifier] = voice
+            name = voice.name().strip() or f"语音 {len(options) + 1}"
+            options.append(SpeechVoice(identifier, f"系统 · {name}"))
+            if (voice.name(), voice.locale().name()) == current_fingerprint:
+                self._default_system_voice_id = identifier
+        if options and self._default_system_voice_id == SYSTEM_VOICE_ID:
+            self._default_system_voice_id = options[0].identifier
+        return tuple(options)
+
+    def _resolve_voice_identifier(self, identifier: str) -> str:
+        if identifier == SYSTEM_VOICE_ID:
+            return self._default_system_voice_id
+        return identifier
 
     def _create_system_engine(self) -> QTextToSpeech | None:
         engines = QTextToSpeech.availableEngines()
@@ -442,12 +533,6 @@ class DesktopSpeechService(QObject):
         engine.errorOccurred.connect(self._on_system_error)
         logger.info("system_speech_ready engine=%s", engine.engine())
         return engine
-
-    def _system_voice_label(self) -> str:
-        if self._system_engine is None:
-            return "系统语音"
-        name = self._system_engine.voice().name().strip()
-        return name or "系统语音"
 
     @Slot(QTextToSpeech.ErrorReason, str)
     def _on_system_error(self, reason: QTextToSpeech.ErrorReason, message: str) -> None:

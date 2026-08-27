@@ -45,6 +45,10 @@ class QtSettingsStoreTests(unittest.TestCase):
         self.assertTrue(self.store.save(expected))
         self.assertEqual(self.store.load(), expected)
 
+        system_voice = AppSettings(voice_id="system:0123456789abcdef")
+        self.assertTrue(self.store.save(system_voice))
+        self.assertEqual(self.store.load(), system_voice)
+
     def test_invalid_values_fall_back_individually(self) -> None:
         self.qsettings.setValue("session/work_seconds", 0)
         self.qsettings.setValue("session/rest_seconds", 4_000)

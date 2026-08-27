@@ -49,6 +49,17 @@ class SpeechServiceTests(unittest.TestCase):
         self.assertNotEqual(first, another_voice)
         self.assertEqual(first.parent, cache_directory)
 
+    def test_kokoro_text_uses_chinese_number_words(self) -> None:
+        normalize = speech._normalize_kokoro_text  # pyright: ignore[reportPrivateUsage]
+
+        self.assertEqual(normalize("第 1 组开始。"), "第一组开始。")
+        self.assertEqual(normalize("休息15秒。"), "休息十五秒。")
+        self.assertEqual(normalize("倒计时 3、2、1。"), "倒计时三、二、一。")
+        self.assertEqual(
+            normalize("第 21 组，休息101秒。"),  # noqa: RUF001
+            "第二十一组，休息一百零一秒。",  # noqa: RUF001
+        )
+
     def test_pcm_writer_produces_a_valid_mono_wave(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             output_path = Path(temporary_directory) / "preview.wav"

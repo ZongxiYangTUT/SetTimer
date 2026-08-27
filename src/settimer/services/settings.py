@@ -130,11 +130,11 @@ class QtSettingsStore:
     def _read_voice_id(self, default: str) -> str:
         raw: object = self._settings.value("audio/voice_id", default)
         value = str(raw).strip()
-        if value == "system:default":
+        prefix, separator, voice = value.partition(":")
+        if prefix == "system" and separator and voice:
             return value
-        prefix, separator, speaker = value.partition(":")
-        if prefix == "kokoro" and separator and speaker.isdecimal():
-            speaker_id = int(speaker)
+        if prefix == "kokoro" and separator and voice.isdecimal():
+            speaker_id = int(voice)
             if 3 <= speaker_id <= 102:
                 return value
         logger.warning("settings_value_invalid key=audio/voice_id value=%r", raw)
