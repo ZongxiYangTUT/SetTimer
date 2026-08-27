@@ -76,11 +76,12 @@ Item {
         delegate: Text {
             required property int index
             required property int modelData
+            readonly property bool centered: Math.abs(Tumbler.displacement) < 0.01
 
-            color: Tumbler.displacement === 0 ? root.theme.text : root.theme.textTertiary
+            color: centered ? root.theme.text : root.theme.textTertiary
             font.family: "Consolas"
-            font.pixelSize: Tumbler.displacement === 0 ? 20 : 13
-            font.weight: Tumbler.displacement === 0 ? Font.Bold : Font.Normal
+            font.pixelSize: centered ? 20 : 13
+            font.weight: centered ? Font.Bold : Font.Normal
             horizontalAlignment: Text.AlignHCenter
             opacity: 1.0 - Math.min(0.7, Math.abs(Tumbler.displacement) * 0.3)
             text: root.displayValue(index)

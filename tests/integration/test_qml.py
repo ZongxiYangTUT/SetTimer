@@ -94,7 +94,8 @@ class QmlSmokeTests(unittest.TestCase):
             self.assertIsInstance(window, QQuickWindow)
 
             work_picker = cast(QObject, window.findChild(QObject, "workPicker"))
-            work_picker.setProperty("currentIndex", 4)
+            self.assertEqual(work_picker.property("stepSeconds"), 15)
+            work_picker.setProperty("currentIndex", 9)
             set_picker = cast(QObject, window.findChild(QObject, "setPicker"))
             set_picker.setProperty("currentIndex", 6)
             rest_picker = cast(QObject, window.findChild(QObject, "restPicker"))

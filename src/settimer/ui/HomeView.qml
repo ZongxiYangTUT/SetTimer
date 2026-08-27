@@ -84,7 +84,7 @@ Item {
                 objectName: "workPicker"
                 selectedIndex: Math.floor((root.appController.workSeconds - startSeconds) / stepSeconds)
                 startSeconds: root.appController.workSeconds % stepSeconds === 0 ? stepSeconds : root.appController.workSeconds % stepSeconds
-                stepSeconds: 30
+                stepSeconds: 15
                 theme: root.theme
                 onValueSelected: value => root.appController.setWorkSeconds(value)
             }
