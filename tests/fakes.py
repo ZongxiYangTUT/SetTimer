@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from settimer.services.history import SessionRecord
 from settimer.services.settings import AppSettings
 
 
@@ -26,6 +27,20 @@ class MemorySettingsStore:
 
     def save(self, settings: AppSettings) -> bool:
         self.settings = settings
+        self.save_count += 1
+        return True
+
+
+class MemoryHistoryStore:
+    def __init__(self, records: tuple[SessionRecord, ...] = ()) -> None:
+        self.records = records
+        self.save_count = 0
+
+    def load(self) -> tuple[SessionRecord, ...]:
+        return self.records
+
+    def save(self, records: tuple[SessionRecord, ...]) -> bool:
+        self.records = records
         self.save_count += 1
         return True
 

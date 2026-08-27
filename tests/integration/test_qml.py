@@ -20,6 +20,7 @@ from tests.fakes import (
     FakeClock,
     FakePowerInhibitor,
     FakeSpeech,
+    MemoryHistoryStore,
     MemorySettingsStore,
 )
 
@@ -36,6 +37,7 @@ class QmlSmokeTests(unittest.TestCase):
             speech=FakeSpeech(),
             audio=FakeAudio(),
             power=FakePowerInhibitor(),
+            history_store=MemoryHistoryStore(),
             auto_start_updates=False,
         )
         engine = QQmlApplicationEngine()
@@ -63,6 +65,7 @@ class QmlSmokeTests(unittest.TestCase):
             speech=FakeSpeech(),
             audio=FakeAudio(),
             power=FakePowerInhibitor(),
+            history_store=MemoryHistoryStore(),
             auto_start_updates=False,
         )
         engine = QQmlApplicationEngine()

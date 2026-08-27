@@ -36,12 +36,24 @@ QtObject {
     readonly property string workDurationLabel: backend.work_duration_label
     readonly property string restDurationLabel: backend.rest_duration_label
     readonly property string sessionEstimate: backend.session_estimate
+    readonly property int historyRecordCount: backend.history_record_count
+    readonly property int historyWeeklyCount: backend.history_weekly_count
+    readonly property string historyWeeklyElapsedText: backend.history_weekly_elapsed_text
+    // qmllint disable prefer-non-var-properties
+    readonly property var historyModel: backend.history_model
+    // qmllint enable prefer-non-var-properties
 
     function openSettings(): void {
         backend.open_settings();
     }
     function closeSettings(): void {
         backend.close_settings();
+    }
+    function openHistory(): void {
+        backend.open_history();
+    }
+    function closeHistory(): void {
+        backend.close_history();
     }
     function startSession(): void {
         backend.start_session();

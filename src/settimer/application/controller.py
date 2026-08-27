@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import logging
 import math
+from collections.abc import Callable
 from dataclasses import replace
+from datetime import datetime
 from enum import IntEnum
 
 from PySide6.QtCore import Property, QObject, Qt, QTimer, Signal, Slot
@@ -13,6 +15,11 @@ from settimer.application.formatting import (
     format_clock,
     format_duration,
     format_estimate,
+)
+from settimer.application.history_model import (
+    HistoryListModel,
+    format_weekly_elapsed,
+    weekly_records,
 )
 from settimer.domain.clock import Clock
 from settimer.domain.events import (
@@ -29,6 +36,7 @@ from settimer.domain.models import SessionConfig, TimerPhase, TimerSnapshot
 from settimer.domain.timer_engine import InvalidTimerTransition, TimerEngine
 from settimer.services.audio import AudioPort, QtAudioService
 from settimer.services.clock import SystemMonotonicClock
+from settimer.services.history import HistoryStore, JsonHistoryStore, SessionRecord
 from settimer.services.power import PowerInhibitor, create_power_inhibitor
 from settimer.services.settings import (
     AppSettings,
@@ -46,6 +54,7 @@ class Screen(IntEnum):
     SETTINGS = 1
     TIMER = 2
     COMPLETE = 3
+    HISTORY = 4
 
 
 class AppController(QObject):
@@ -54,6 +63,7 @@ class AppController(QObject):
     screen_changed = Signal()
     resume_countdown_changed = Signal()
     muted_changed = Signal()
+    history_changed = Signal()
 
     def __init__(
         self,
@@ -63,6 +73,8 @@ class AppController(QObject):
         speech: SpeechPort | None = None,
         audio: AudioPort | None = None,
         power: PowerInhibitor | None = None,
+        history_store: HistoryStore | None = None,
+        wall_now: Callable[[], datetime] | None = None,
         auto_start_updates: bool = True,
         parent: QObject | None = None,
     ) -> None:
@@ -75,6 +87,12 @@ class AppController(QObject):
         audio_service = audio or QtAudioService(self)
         self._announcements = AnnouncementCoordinator(speech_service, audio_service)
         self._power = power or create_power_inhibitor()
+        self._wall_now = wall_now or _system_wall_now
+        self._history_store = history_store or JsonHistoryStore()
+        self._history_records = list(self._history_store.load())
+        self._history_model = HistoryListModel(self._history_records, self._wall_now)
+        self._session_started_at: datetime | None = None
+        self._active_session_config: SessionConfig | None = None
         self._screen = Screen.HOME
         self._muted = False
         self._resume_deadline: float | None = None
@@ -228,6 +246,23 @@ class AppController(QObject):
     def always_on_top(self) -> bool:
         return self._settings.always_on_top
 
+    @Property(QObject, constant=True)
+    def history_model(self) -> QObject:
+        return self._history_model
+
+    @Property(int, notify=history_changed)
+    def history_record_count(self) -> int:
+        return len(self._history_records)
+
+    @Property(int, notify=history_changed)
+    def history_weekly_count(self) -> int:
+        return len(weekly_records(self._history_records, self._wall_now()))
+
+    @Property(str, notify=history_changed)
+    def history_weekly_elapsed_text(self) -> str:
+        records = weekly_records(self._history_records, self._wall_now())
+        return format_weekly_elapsed(sum(record.elapsed_seconds for record in records))
+
     @Property(str, notify=settings_changed)
     def work_duration_label(self) -> str:
         return format_duration(self._settings.work_seconds)
@@ -256,6 +291,16 @@ class AppController(QObject):
             self._set_screen(Screen.HOME)
 
     @Slot()
+    def open_history(self) -> None:
+        if self._screen is Screen.HOME:
+            self._set_screen(Screen.HISTORY)
+
+    @Slot()
+    def close_history(self) -> None:
+        if self._screen is Screen.HISTORY:
+            self._set_screen(Screen.HOME)
+
+    @Slot()
     def start_session(self) -> None:
         if self._screen not in {Screen.HOME, Screen.COMPLETE}:
             return
@@ -268,6 +313,8 @@ class AppController(QObject):
             countdown_thresholds=thresholds,
         )
         events = self._engine.start(config)
+        self._session_started_at = self._wall_now()
+        self._active_session_config = config
         self._resume_deadline = None
         self._set_resume_count(0)
         self._power.acquire()
@@ -298,11 +345,14 @@ class AppController(QObject):
 
     @Slot()
     def stop_session(self) -> None:
+        interrupted_snapshot = self._snapshot if self._screen is Screen.TIMER else None
         events = self._engine.reset()
         self._resume_deadline = None
         self._set_resume_count(0)
         self._announcements.stop()
         self._power.release()
+        if interrupted_snapshot is not None:
+            self._record_session(interrupted_snapshot, completed=False)
         self._consume(events)
         self._set_screen(Screen.HOME)
 
@@ -382,6 +432,8 @@ class AppController(QObject):
 
     def shutdown(self) -> None:
         self._update_timer.stop()
+        if self._screen is Screen.TIMER:
+            self._record_session(self._snapshot, completed=False)
         self._announcements.stop()
         self._power.release()
 
@@ -391,6 +443,7 @@ class AppController(QObject):
             self._log_events(events)
             self._announcements.handle(events, self._snapshot, self._settings, self._muted)
         if any(isinstance(event, SessionCompleted) for event in events):
+            self._record_session(self._snapshot, completed=True)
             self._power.release()
             self._set_screen(Screen.COMPLETE)
         self.state_changed.emit()
@@ -413,6 +466,35 @@ class AppController(QObject):
         self._resume_count = count
         self.resume_countdown_changed.emit()
         self.state_changed.emit()
+
+    def _record_session(self, snapshot: TimerSnapshot, *, completed: bool) -> None:
+        config = self._active_session_config
+        started_at = self._session_started_at
+        if config is None or started_at is None:
+            return
+        if completed:
+            completed_sets = config.set_count
+        elif snapshot.active_phase is TimerPhase.REST:
+            completed_sets = snapshot.current_set
+        else:
+            completed_sets = max(0, snapshot.current_set - 1)
+        record = SessionRecord(
+            started_at=started_at,
+            work_seconds=round(config.work_duration),
+            rest_seconds=round(config.rest_duration),
+            set_count=config.set_count,
+            completed_sets=completed_sets,
+            elapsed_seconds=math.ceil(snapshot.elapsed),
+            completed=completed,
+        )
+        self._history_records.insert(0, record)
+        del self._history_records[200:]
+        if not self._history_store.save(tuple(self._history_records)):
+            logger.warning("history_save_failed record remains active for this run")
+        self._history_model.set_records(self._history_records)
+        self._active_session_config = None
+        self._session_started_at = None
+        self.history_changed.emit()
 
     def _on_system_color_scheme_changed(self, _scheme: Qt.ColorScheme) -> None:
         if self._settings.theme is ThemePreference.SYSTEM:
@@ -439,3 +521,7 @@ class AppController(QObject):
                 logger.info("session_completed sets=%s", event.set_count)
             elif isinstance(event, SessionReset):
                 logger.info("session_reset")
+
+
+def _system_wall_now() -> datetime:
+    return datetime.now().astimezone()

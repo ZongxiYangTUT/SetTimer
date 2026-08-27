@@ -55,6 +55,10 @@ ApplicationWindow {
             appController: appController
             theme: theme
         }
+        HistoryView {
+            appController: appController
+            theme: theme
+        }
     }
 
     Shortcut {
@@ -80,6 +84,8 @@ ApplicationWindow {
         onActivated: {
             if (appController.screen === 1)
                 appController.closeSettings();
+            else if (appController.screen === 4)
+                appController.closeHistory();
         }
     }
     Shortcut {
@@ -90,6 +96,11 @@ ApplicationWindow {
     Shortcut {
         sequence: "M"
         onActivated: appController.toggleMuted()
+    }
+    Shortcut {
+        sequence: "H"
+        enabled: appController.screen === 0
+        onActivated: appController.openHistory()
     }
 
     function toggleFullscreen(): void {

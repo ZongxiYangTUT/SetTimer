@@ -29,23 +29,38 @@ Item {
                 color: root.theme.text
                 font.pixelSize: 16
                 font.weight: Font.Bold
-                text: "SETTIMER"
+                text: "REP"
             }
 
             Item {
                 Layout.fillWidth: true
             }
 
-            IconButton {
-                accessibleName: "设置"
-                fillColor: "transparent"
-                iconColor: root.theme.text
-                iconName: "settings"
-                implicitHeight: 36
-                implicitWidth: 36
-                outlined: false
-                theme: root.theme
-                onClicked: root.appController.openSettings()
+            RowLayout {
+                spacing: 2
+
+                IconButton {
+                    accessibleName: "历史记录"
+                    fillColor: "transparent"
+                    iconColor: root.theme.textSecondary
+                    iconName: "history"
+                    implicitHeight: 36
+                    implicitWidth: 36
+                    outlined: false
+                    theme: root.theme
+                    onClicked: root.appController.openHistory()
+                }
+                IconButton {
+                    accessibleName: "设置"
+                    fillColor: "transparent"
+                    iconColor: root.theme.textSecondary
+                    iconName: "settings"
+                    implicitHeight: 36
+                    implicitWidth: 36
+                    outlined: false
+                    theme: root.theme
+                    onClicked: root.appController.openSettings()
+                }
             }
         }
 

@@ -26,6 +26,8 @@ Item {
             return "M8 3H3v5 M16 3h5v5 M8 21H3v-5 M16 21h5v-5";
         case "hourglass":
             return "M6 3h12 M6 21h12 M8 3v4l4 5-4 5v4 M16 3v4l-4 5 4 5v4";
+        case "history":
+            return "M3 12a9 9 0 1 0 3-6.7 M3 3v6h6 M12 7v5l3 2";
         case "microphone":
             return "M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z M5 11v1a7 7 0 0 0 14 0v-1 M12 19v3 M8 22h8";
         case "pause":
@@ -41,7 +43,7 @@ Item {
         case "sets":
             return "M12 3L3 8l9 5 9-5-9-5z M3 12l9 5 9-5 M3 16l9 5 9-5";
         case "settings":
-            return "M9 3h6l1 3 3-1 2 5-3 2 3 2-2 5-3-1-1 3H9l-1-3-3 1-2-5 3-2-3-2 2-5 3 1 1-3z M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z";
+            return "M12.2 2h-.4a2 2 0 0 0-2 2v.2a2 2 0 0 1-1 1.7l-.4.3a2 2 0 0 1-2 0L6 6a2 2 0 0 0-2.7.7l-.2.4a2 2 0 0 0 .7 2.7l.4.2a2 2 0 0 1 1 1.7v.6a2 2 0 0 1-1 1.7l-.4.2a2 2 0 0 0-.7 2.7l.2.4A2 2 0 0 0 6 18l.4-.2a2 2 0 0 1 2 0l.4.3a2 2 0 0 1 1 1.7v.2a2 2 0 0 0 2 2h.4a2 2 0 0 0 2-2v-.2a2 2 0 0 1 1-1.7l.4-.3a2 2 0 0 1 2 0l.4.2a2 2 0 0 0 2.7-.7l.2-.4a2 2 0 0 0-.7-2.7l-.4-.2a2 2 0 0 1-1-1.7v-.6a2 2 0 0 1 1-1.7l.4-.2a2 2 0 0 0 .7-2.7l-.2-.4A2 2 0 0 0 18 6l-.4.2a2 2 0 0 1-2 0l-.4-.3a2 2 0 0 1-1-1.7V4a2 2 0 0 0-2-2z M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z";
         case "stop":
             return "M7 7h10v10H7z";
         case "theme":
@@ -50,6 +52,8 @@ Item {
             return "M11 5L6 9H2v6h4l5 4V5z M15 9a4 4 0 0 1 0 6 M17 6a8 8 0 0 1 0 12";
         case "volume-off":
             return "M11 5L6 9H2v6h4l5 4V5z M16 9l6 6 M22 9l-6 6";
+        case "warning":
+            return "M12 8v5 M12 17h.01 M10.3 4.6L2.5 18a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 4.6a2 2 0 0 0-3.4 0z";
         default:
             return "";
         }

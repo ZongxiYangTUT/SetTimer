@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import unittest
+from datetime import datetime, timezone
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
@@ -14,6 +15,7 @@ from tests.fakes import (
     FakeClock,
     FakePowerInhibitor,
     FakeSpeech,
+    MemoryHistoryStore,
     MemorySettingsStore,
 )
 
@@ -41,12 +43,16 @@ class AppControllerTests(unittest.TestCase):
         self.speech = FakeSpeech()
         self.audio = FakeAudio()
         self.power = FakePowerInhibitor()
+        self.history = MemoryHistoryStore()
+        self.wall_time = datetime(2026, 8, 27, 14, 30, tzinfo=timezone.utc)
         self.controller = AppController(
             clock=self.clock,
             settings_store=self.store,
             speech=self.speech,
             audio=self.audio,
             power=self.power,
+            history_store=self.history,
+            wall_now=lambda: self.wall_time,
             auto_start_updates=False,
         )
 
@@ -74,6 +80,11 @@ class AppControllerTests(unittest.TestCase):
         self.assertFalse(self.power.active)
         self.assertEqual(self.audio.completions, 1)
         self.assertEqual(self.speech.messages[-1], "训练完成。")
+        self.assertEqual(len(self.history.records), 1)
+        record = self.history.records[0]
+        self.assertTrue(record.completed)
+        self.assertEqual(record.completed_sets, 2)
+        self.assertEqual(record.elapsed_seconds, 5)
 
     def test_resume_countdown_uses_the_injected_monotonic_clock(self) -> None:
         self.store.settings = AppSettings(
@@ -91,6 +102,8 @@ class AppControllerTests(unittest.TestCase):
             speech=self.speech,
             audio=self.audio,
             power=self.power,
+            history_store=self.history,
+            wall_now=lambda: self.wall_time,
             auto_start_updates=False,
         )
         self.controller.start_session()
@@ -127,6 +140,10 @@ class AppControllerTests(unittest.TestCase):
         self.assertEqual(self.controller.screen, Screen.SETTINGS)
         self.controller.close_settings()
         self.assertEqual(self.controller.screen, Screen.HOME)
+        self.controller.open_history()
+        self.assertEqual(self.controller.screen, Screen.HISTORY)
+        self.controller.close_history()
+        self.assertEqual(self.controller.screen, Screen.HOME)
 
         self.controller.start_session()
         self.controller.start_session()
@@ -143,6 +160,8 @@ class AppControllerTests(unittest.TestCase):
         self.assertEqual(self.controller.screen, Screen.HOME)
         self.assertEqual(self.controller.phase_key, "idle")
         self.assertFalse(self.power.active)
+        self.assertEqual(len(self.history.records), 1)
+        self.assertFalse(self.history.records[0].completed)
 
         self.controller.pause_or_resume()
         self.assertFalse(self.controller.paused)
@@ -173,6 +192,8 @@ class AppControllerTests(unittest.TestCase):
             speech=self.speech,
             audio=self.audio,
             power=self.power,
+            history_store=self.history,
+            wall_now=lambda: self.wall_time,
             auto_start_updates=False,
         )
         self.controller.start_session()
