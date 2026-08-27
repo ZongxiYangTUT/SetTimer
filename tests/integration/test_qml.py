@@ -8,7 +8,7 @@ from typing import cast
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
-from PySide6.QtCore import QCoreApplication, QEvent, QObject, QPointF, Qt, QUrl
+from PySide6.QtCore import QCoreApplication, QEvent, QObject, QPoint, QPointF, Qt, QUrl
 from PySide6.QtQml import QQmlApplicationEngine
 from PySide6.QtQuick import QQuickItem, QQuickWindow
 from PySide6.QtTest import QTest
@@ -124,6 +124,36 @@ class QmlSmokeTests(unittest.TestCase):
                 Qt.KeyboardModifier.NoModifier,
                 center,
             )
+            controller.open_history()
+            QTest.qWait(80)
+            history_list = cast(
+                QQuickItem,
+                window.findChild(QQuickItem, "historyList"),
+            )
+            history_card = next(
+                item
+                for item in history_list.childItems()[0].childItems()
+                if item.objectName() == "historyRecordCard"
+            )
+            history_center = history_card.mapToItem(
+                window.contentItem(),
+                QPointF(history_card.width() / 2, history_card.height() / 2),
+            ).toPoint()
+            QTest.mousePress(
+                window,
+                Qt.MouseButton.LeftButton,
+                Qt.KeyboardModifier.NoModifier,
+                history_center,
+            )
+            QTest.mouseMove(window, history_center + QPoint(140, 0), 40)
+            QTest.mouseRelease(
+                window,
+                Qt.MouseButton.LeftButton,
+                Qt.KeyboardModifier.NoModifier,
+                history_center + QPoint(140, 0),
+            )
+            QTest.qWait(220)
+            self.assertEqual(controller.history_record_count, 0)
             window.setProperty("visible", False)
         finally:
             engine.deleteLater()

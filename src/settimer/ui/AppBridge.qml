@@ -55,6 +55,9 @@ QtObject {
     function closeHistory(): void {
         backend.close_history();
     }
+    function deleteHistoryRecord(index: int): void {
+        backend.delete_history_record(index);
+    }
     function startSession(): void {
         backend.start_session();
     }

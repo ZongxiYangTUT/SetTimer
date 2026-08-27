@@ -300,6 +300,16 @@ class AppController(QObject):
         if self._screen is Screen.HISTORY:
             self._set_screen(Screen.HOME)
 
+    @Slot(int)
+    def delete_history_record(self, index: int) -> None:
+        if not 0 <= index < len(self._history_records):
+            return
+        del self._history_records[index]
+        if not self._history_store.save(tuple(self._history_records)):
+            logger.warning("history_save_failed deletion remains active for this run")
+        self._history_model.set_records(self._history_records)
+        self.history_changed.emit()
+
     @Slot()
     def start_session(self) -> None:
         if self._screen not in {Screen.HOME, Screen.COMPLETE}:

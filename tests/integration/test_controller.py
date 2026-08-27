@@ -85,6 +85,10 @@ class AppControllerTests(unittest.TestCase):
         self.assertTrue(record.completed)
         self.assertEqual(record.completed_sets, 2)
         self.assertEqual(record.elapsed_seconds, 5)
+        self.controller.delete_history_record(0)
+        self.assertEqual(self.controller.history_record_count, 0)
+        self.assertEqual(self.history.records, ())
+        self.controller.delete_history_record(99)
 
     def test_resume_countdown_uses_the_injected_monotonic_clock(self) -> None:
         self.store.settings = AppSettings(

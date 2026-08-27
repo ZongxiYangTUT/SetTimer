@@ -25,13 +25,6 @@ Item {
             Layout.fillWidth: true
             Layout.preferredHeight: 42
 
-            Label {
-                color: root.theme.text
-                font.pixelSize: 16
-                font.weight: Font.Bold
-                text: "REP"
-            }
-
             Item {
                 Layout.fillWidth: true
             }

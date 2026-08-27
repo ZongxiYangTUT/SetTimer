@@ -112,6 +112,7 @@ Item {
                 boundsBehavior: Flickable.StopAtBounds
                 clip: true
                 model: root.appController.historyModel
+                objectName: "historyList"
                 spacing: 8
 
                 section.criteria: ViewSection.FullString
@@ -129,84 +130,24 @@ Item {
                     width: historyList.width
                 }
 
-                delegate: Rectangle {
+                delegate: SwipeHistoryCard {
                     id: recordCard
 
                     required property bool completed
                     required property string completedSets
                     required property string elapsedText
+                    required property int index
                     required property string summary
                     required property string timeLabel
 
-                    Accessible.description: completed ? "训练已完成" : `训练中断，完成 ${completedSets}`
-                    Accessible.name: `${timeLabel}，${summary}，总计 ${elapsedText}`
-                    border.color: root.theme.border
-                    border.width: 1
-                    color: root.theme.surface
-                    height: 72
-                    radius: 13
+                    recordCompleted: completed
+                    recordCompletedSets: completedSets
+                    recordElapsedText: elapsedText
+                    recordSummary: summary
+                    recordTimeLabel: timeLabel
+                    theme: root.theme
                     width: historyList.width
-
-                    ColumnLayout {
-                        anchors.fill: parent
-                        anchors.leftMargin: 14
-                        anchors.rightMargin: 12
-                        anchors.topMargin: 10
-                        anchors.bottomMargin: 10
-                        spacing: 2
-
-                        RowLayout {
-                            Layout.fillWidth: true
-
-                            Label {
-                                Layout.fillWidth: true
-                                color: root.theme.textSecondary
-                                font.pixelSize: 11
-                                text: recordCard.timeLabel
-                            }
-                            Label {
-                                color: root.theme.textTertiary
-                                font.pixelSize: 10
-                                text: "总计"
-                            }
-                            Label {
-                                color: root.theme.text
-                                font.family: "Consolas"
-                                font.pixelSize: 13
-                                font.weight: Font.Bold
-                                text: recordCard.elapsedText
-                            }
-                        }
-
-                        RowLayout {
-                            Layout.fillWidth: true
-
-                            Label {
-                                Layout.fillWidth: true
-                                color: root.theme.text
-                                elide: Text.ElideRight
-                                font.pixelSize: 13
-                                font.weight: Font.DemiBold
-                                text: recordCard.summary
-                            }
-
-                            Rectangle {
-                                Layout.preferredHeight: 24
-                                Layout.preferredWidth: 24
-                                color: recordCard.completed ? root.theme.accentSoft : root.theme.pauseSoft
-                                radius: 12
-
-                                LineIcon {
-                                    anchors.centerIn: parent
-                                    color: recordCard.completed ? root.theme.accent : root.theme.pause
-                                    height: 14
-                                    name: recordCard.completed ? "check" : "warning"
-                                    strokeWidth: 2.2
-                                    width: 14
-                                }
-                            }
-                        }
-                    }
+                    onDeleteRequested: root.appController.deleteHistoryRecord(index)
                 }
 
                 ScrollBar.vertical: ScrollBar {

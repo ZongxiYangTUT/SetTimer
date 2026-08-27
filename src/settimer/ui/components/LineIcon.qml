@@ -48,6 +48,8 @@ Item {
             return "M7 7h10v10H7z";
         case "theme":
             return "M12 4a8 8 0 1 0 8 8 6 6 0 0 1-8-8z";
+        case "trash":
+            return "M4 7h16 M9 7V4h6v3 M6 7l1 14h10l1-14 M10 11v6 M14 11v6";
         case "volume":
             return "M11 5L6 9H2v6h4l5 4V5z M15 9a4 4 0 0 1 0 6 M17 6a8 8 0 0 1 0 12";
         case "volume-off":
