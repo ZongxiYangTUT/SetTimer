@@ -161,7 +161,9 @@ Item {
                         radius: width / 2
                     }
                     implicitWidth: 6
+                    objectName: "historyScrollBar"
                     policy: ScrollBar.AsNeeded
+                    visible: historyList.contentHeight > historyList.height + 1
                 }
             }
 

@@ -36,7 +36,7 @@ Item {
                     accessibleName: "历史记录"
                     fillColor: "transparent"
                     iconColor: root.theme.textSecondary
-                    iconName: "history"
+                    iconName: "history-rounded"
                     implicitHeight: 36
                     implicitWidth: 36
                     outlined: false
@@ -47,7 +47,7 @@ Item {
                     accessibleName: "设置"
                     fillColor: "transparent"
                     iconColor: root.theme.textSecondary
-                    iconName: "settings"
+                    iconName: "settings-sharp"
                     implicitHeight: 36
                     implicitWidth: 36
                     outlined: false

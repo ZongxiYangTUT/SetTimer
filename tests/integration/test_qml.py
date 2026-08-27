@@ -130,6 +130,11 @@ class QmlSmokeTests(unittest.TestCase):
                 QQuickItem,
                 window.findChild(QQuickItem, "historyList"),
             )
+            history_scroll_bar = cast(
+                QQuickItem,
+                window.findChild(QQuickItem, "historyScrollBar"),
+            )
+            self.assertFalse(history_scroll_bar.isVisible())
             history_card = next(
                 item
                 for item in history_list.childItems()[0].childItems()
