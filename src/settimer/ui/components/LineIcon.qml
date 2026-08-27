@@ -41,7 +41,7 @@ Item {
         case "sets":
             return "M12 3L3 8l9 5 9-5-9-5z M3 12l9 5 9-5 M3 16l9 5 9-5";
         case "settings":
-            return "M12 3v3 M12 18v3 M3 12h3 M18 12h3 M5.6 5.6l2.2 2.2 M16.2 16.2l2.2 2.2 M18.4 5.6l-2.2 2.2 M7.8 16.2l-2.2 2.2 M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8z";
+            return "M9 3h6l1 3 3-1 2 5-3 2 3 2-2 5-3-1-1 3H9l-1-3-3 1-2-5 3-2-3-2 2-5 3 1 1-3z M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z";
         case "stop":
             return "M7 7h10v10H7z";
         case "theme":

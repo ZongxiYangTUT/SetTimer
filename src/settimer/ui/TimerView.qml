@@ -28,7 +28,7 @@ Item {
     }
 
     function requestStop(): void {
-        stopDialog.open();
+        appController.stopSession();
     }
 
     Rectangle {
@@ -147,16 +147,16 @@ Item {
             Layout.bottomMargin: 8
             spacing: 34
 
-            IconButton {
-                accessibleName: "结束训练"
+            HoldIconButton {
+                accessibleName: "长按结束训练"
                 fillColor: root.pausedState ? "#3a3a3c" : root.theme.surface
                 iconColor: root.theme.text
                 iconName: "stop"
                 implicitHeight: 58
                 implicitWidth: 58
-                outlined: false
+                objectName: "stopHoldButton"
                 theme: root.theme
-                onClicked: stopDialog.open()
+                onHeld: root.appController.stopSession()
             }
 
             IconButton {
@@ -170,76 +170,6 @@ Item {
                 outlined: false
                 theme: root.theme
                 onClicked: root.appController.pauseOrResume()
-            }
-        }
-    }
-
-    Dialog {
-        id: stopDialog
-
-        anchors.centerIn: Overlay.overlay
-        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-        dim: true
-        height: 218
-        modal: true
-        padding: 22
-        width: Math.min(360, Overlay.overlay ? Overlay.overlay.width - 40 : 360)
-
-        background: Rectangle {
-            border.color: root.theme.borderStrong
-            border.width: 1
-            color: root.theme.surface
-            radius: 18
-        }
-
-        contentItem: ColumnLayout {
-            spacing: 12
-
-            Rectangle {
-                Layout.alignment: Qt.AlignHCenter
-                Layout.preferredHeight: 44
-                Layout.preferredWidth: 44
-                color: root.theme.dangerSoft
-                radius: 22
-
-                LineIcon {
-                    anchors.centerIn: parent
-                    color: root.theme.danger
-                    height: 22
-                    name: "stop"
-                    width: 22
-                }
-            }
-            Label {
-                Layout.alignment: Qt.AlignHCenter
-                color: root.theme.text
-                font.pixelSize: 18
-                font.weight: Font.DemiBold
-                text: "结束本次训练？"
-            }
-            Item {
-                Layout.fillHeight: true
-            }
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: 10
-
-                PrimaryButton {
-                    Layout.fillWidth: true
-                    text: "取消"
-                    theme: root.theme
-                    onClicked: stopDialog.close()
-                }
-                PrimaryButton {
-                    Layout.fillWidth: true
-                    text: "结束"
-                    theme: root.theme
-                    variant: "danger"
-                    onClicked: {
-                        stopDialog.close();
-                        root.appController.stopSession();
-                    }
-                }
             }
         }
     }

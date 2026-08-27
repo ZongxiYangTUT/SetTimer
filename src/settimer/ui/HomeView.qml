@@ -16,14 +16,6 @@ Item {
         return `${minutes.toString().padStart(2, "0")}:${finalSeconds.toString().padStart(2, "0")}`;
     }
 
-    function steppedClock(seconds: int, offset: int, step: int, minimum: int): string {
-        return clockText(Math.max(minimum, seconds + offset * step));
-    }
-
-    function steppedSets(offset: int): string {
-        return Math.max(1, root.appController.setCount + offset).toString();
-    }
-
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 26
@@ -44,26 +36,15 @@ Item {
                 Layout.fillWidth: true
             }
 
-            Button {
-                Accessible.name: "打开设置"
-                Layout.preferredHeight: 22
-                Layout.preferredWidth: intervalLabel.implicitWidth + 18
-                hoverEnabled: true
-
-                contentItem: Label {
-                    id: intervalLabel
-
-                    color: root.theme.textSecondary
-                    font.pixelSize: 9
-                    font.weight: Font.DemiBold
-                    horizontalAlignment: Text.AlignHCenter
-                    text: "INTERVALS"
-                    verticalAlignment: Text.AlignVCenter
-                }
-                background: Rectangle {
-                    color: root.theme.surface
-                    radius: 5
-                }
+            IconButton {
+                accessibleName: "设置"
+                fillColor: "transparent"
+                iconColor: root.theme.text
+                iconName: "settings"
+                implicitHeight: 36
+                implicitWidth: 36
+                outlined: false
+                theme: root.theme
                 onClicked: root.appController.openSettings()
             }
         }
@@ -79,47 +60,37 @@ Item {
 
             PlanPickerColumn {
                 Layout.fillWidth: true
+                itemCount: 99
                 label: "组数 (SETS)"
-                nextOne: root.steppedSets(1)
-                nextTwo: root.steppedSets(2)
-                previousOne: root.steppedSets(-1)
-                previousTwo: root.steppedSets(-2)
+                mode: "sets"
+                objectName: "setPicker"
+                selectedIndex: root.appController.setCount - 1
                 theme: root.theme
-                value: root.steppedSets(0)
-                onClicked: {
-                    setDialog.selectedValue = root.appController.setCount;
-                    setDialog.open();
-                }
+                onValueSelected: value => root.appController.setSetCount(value)
             }
 
             PlanPickerColumn {
                 Layout.fillWidth: true
+                itemCount: Math.floor((3599 - startSeconds) / stepSeconds) + 1
                 label: "训练 (WORK)"
-                nextOne: root.steppedClock(root.appController.workSeconds, 1, 30, 1)
-                nextTwo: root.steppedClock(root.appController.workSeconds, 2, 30, 1)
-                previousOne: root.steppedClock(root.appController.workSeconds, -1, 30, 1)
-                previousTwo: root.steppedClock(root.appController.workSeconds, -2, 30, 1)
+                objectName: "workPicker"
+                selectedIndex: Math.floor((root.appController.workSeconds - startSeconds) / stepSeconds)
+                startSeconds: root.appController.workSeconds % stepSeconds === 0 ? stepSeconds : root.appController.workSeconds % stepSeconds
+                stepSeconds: 30
                 theme: root.theme
-                value: root.clockText(root.appController.workSeconds)
-                onClicked: {
-                    workDialog.durationSeconds = root.appController.workSeconds;
-                    workDialog.open();
-                }
+                onValueSelected: value => root.appController.setWorkSeconds(value)
             }
 
             PlanPickerColumn {
                 Layout.fillWidth: true
+                itemCount: Math.floor((3599 - startSeconds) / stepSeconds) + 1
                 label: "休息 (REST)"
-                nextOne: root.steppedClock(root.appController.restSeconds, 1, 15, 0)
-                nextTwo: root.steppedClock(root.appController.restSeconds, 2, 15, 0)
-                previousOne: root.steppedClock(root.appController.restSeconds, -1, 15, 0)
-                previousTwo: root.steppedClock(root.appController.restSeconds, -2, 15, 0)
+                objectName: "restPicker"
+                selectedIndex: Math.floor((root.appController.restSeconds - startSeconds) / stepSeconds)
+                startSeconds: root.appController.restSeconds % stepSeconds
+                stepSeconds: 15
                 theme: root.theme
-                value: root.clockText(root.appController.restSeconds)
-                onClicked: {
-                    restDialog.durationSeconds = root.appController.restSeconds;
-                    restDialog.open();
-                }
+                onValueSelected: value => root.appController.setRestSeconds(value)
             }
         }
 
@@ -150,40 +121,6 @@ Item {
             }
         }
 
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 54
-            Layout.topMargin: 12
-            color: root.theme.surface
-            radius: 10
-
-            RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: 15
-                anchors.rightMargin: 12
-                spacing: 10
-
-                LineIcon {
-                    Layout.preferredHeight: 20
-                    Layout.preferredWidth: 20
-                    color: root.theme.textSecondary
-                    name: "microphone"
-                }
-                Label {
-                    Layout.fillWidth: true
-                    color: root.theme.text
-                    font.pixelSize: 13
-                    font.weight: Font.Medium
-                    text: "语音播报 (VOICE)"
-                }
-                ToggleSwitch {
-                    checked: root.appController.voiceEnabled
-                    theme: root.theme
-                    onClicked: root.appController.setVoiceEnabled(checked)
-                }
-            }
-        }
-
         Item {
             Layout.fillHeight: true
             Layout.minimumHeight: 24
@@ -197,30 +134,5 @@ Item {
             variant: "inverted"
             onClicked: root.appController.startSession()
         }
-    }
-
-    DurationDialog {
-        id: workDialog
-
-        allowZero: false
-        theme: root.theme
-        title: "训练时间"
-        onDurationAccepted: seconds => root.appController.setWorkSeconds(seconds)
-    }
-
-    DurationDialog {
-        id: restDialog
-
-        allowZero: true
-        theme: root.theme
-        title: "休息时间"
-        onDurationAccepted: seconds => root.appController.setRestSeconds(seconds)
-    }
-
-    NumberPickerDialog {
-        id: setDialog
-
-        theme: root.theme
-        onValueAccepted: value => root.appController.setSetCount(value)
     }
 }
