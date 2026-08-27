@@ -145,14 +145,31 @@ class QmlSmokeTests(unittest.TestCase):
                 Qt.KeyboardModifier.NoModifier,
                 history_center,
             )
-            QTest.mouseMove(window, history_center + QPoint(140, 0), 40)
+            QTest.mouseMove(window, history_center + QPoint(-140, 0), 40)
             QTest.mouseRelease(
                 window,
                 Qt.MouseButton.LeftButton,
                 Qt.KeyboardModifier.NoModifier,
-                history_center + QPoint(140, 0),
+                history_center + QPoint(-140, 0),
             )
             QTest.qWait(220)
+            self.assertEqual(controller.history_record_count, 1)
+
+            delete_button = cast(
+                QQuickItem,
+                history_card.findChild(QQuickItem, "historyDeleteButton"),
+            )
+            delete_center = delete_button.mapToItem(
+                window.contentItem(),
+                QPointF(delete_button.width() / 2, delete_button.height() / 2),
+            ).toPoint()
+            QTest.mouseClick(
+                window,
+                Qt.MouseButton.LeftButton,
+                Qt.KeyboardModifier.NoModifier,
+                delete_center,
+            )
+            QTest.qWait(80)
             self.assertEqual(controller.history_record_count, 0)
             window.setProperty("visible", False)
         finally:

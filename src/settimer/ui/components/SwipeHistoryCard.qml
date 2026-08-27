@@ -14,29 +14,44 @@ Item {
     property string recordTimeLabel: ""
     signal deleteRequested
 
-    property bool pendingDelete: false
-    readonly property real deleteThreshold: Math.min(96, width * 0.24)
+    property bool deleteRevealed: false
+    readonly property real deleteActionWidth: 76
+    readonly property real revealThreshold: deleteActionWidth * 0.4
 
-    Accessible.description: recordCompleted ? "训练已完成，向右滑动可删除" : `训练中断，完成 ${recordCompletedSets}，向右滑动可删除`
+    Accessible.description: recordCompleted ? "训练已完成，向左滑动可显示删除按钮" : `训练中断，完成 ${recordCompletedSets}，向左滑动可显示删除按钮`
     Accessible.name: `${recordTimeLabel}，${recordSummary}，总计 ${recordElapsedText}`
     clip: true
     implicitHeight: 72
     objectName: "historyRecordCard"
 
-    Rectangle {
-        anchors.fill: parent
-        color: root.theme.danger
-        radius: 13
+    Item {
+        id: deleteAction
 
-        LineIcon {
-            anchors.left: parent.left
-            anchors.leftMargin: 24
-            anchors.verticalCenter: parent.verticalCenter
-            color: root.theme.text
-            height: 22
-            name: "trash"
-            strokeWidth: 2
-            width: 22
+        Accessible.name: "删除这条训练记录"
+        Accessible.role: Accessible.Button
+        anchors.bottom: parent.bottom
+        anchors.right: parent.right
+        anchors.top: parent.top
+        objectName: "historyDeleteButton"
+        width: root.deleteActionWidth
+
+        Rectangle {
+            anchors.fill: parent
+            color: root.theme.danger
+            radius: 13
+
+            LineIcon {
+                anchors.centerIn: parent
+                color: root.theme.text
+                height: 22
+                name: "trash"
+                strokeWidth: 2
+                width: 22
+            }
+        }
+
+        TapHandler {
+            onTapped: root.deleteRequested()
         }
     }
 
@@ -115,15 +130,26 @@ Item {
             id: swipeHandler
 
             target: foreground
-            xAxis.maximum: root.width * 0.38
-            xAxis.minimum: 0
+            xAxis.maximum: 0
+            xAxis.minimum: -root.deleteActionWidth * 1.15
             yAxis.enabled: false
 
             onActiveChanged: {
-                if (active)
+                if (active) {
+                    settleAnimation.stop();
                     return;
-                root.pendingDelete = foreground.x >= root.deleteThreshold;
-                settleAnimation.to = root.pendingDelete ? root.width : 0;
+                }
+                root.deleteRevealed = foreground.x <= -root.revealThreshold;
+                settleAnimation.to = root.deleteRevealed ? -root.deleteActionWidth : 0;
+                settleAnimation.restart();
+            }
+        }
+
+        TapHandler {
+            enabled: root.deleteRevealed
+            onTapped: {
+                root.deleteRevealed = false;
+                settleAnimation.to = 0;
                 settleAnimation.restart();
             }
         }
@@ -132,13 +158,9 @@ Item {
     NumberAnimation {
         id: settleAnimation
 
-        duration: root.pendingDelete ? 180 : 160
+        duration: 160
         easing.type: Easing.OutCubic
         property: "x"
         target: foreground
-        onFinished: {
-            if (root.pendingDelete)
-                root.deleteRequested();
-        }
     }
 }
