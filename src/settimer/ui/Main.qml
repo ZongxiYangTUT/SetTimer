@@ -13,12 +13,12 @@ ApplicationWindow {
 
     color: theme.background
     flags: Qt.Window | (appController.alwaysOnTop ? Qt.WindowStaysOnTopHint : 0)
-    height: 720
-    minimumHeight: 620
-    minimumWidth: 420
+    height: 760
+    minimumHeight: 640
+    minimumWidth: 400
     title: "SetTimer"
     visible: true
-    width: 520
+    width: 460
 
     AppBridge {
         id: appController
@@ -29,7 +29,7 @@ ApplicationWindow {
     Theme {
         id: theme
 
-        dark: appController.darkMode
+        dark: true
     }
 
     StackLayout {

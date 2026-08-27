@@ -11,15 +11,17 @@ Item {
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 24
+        anchors.margins: 22
         spacing: 0
 
         RowLayout {
             Layout.fillWidth: true
-            Layout.preferredHeight: 42
+            Layout.preferredHeight: 48
 
             IconButton {
                 accessibleName: "返回"
+                fillColor: "transparent"
+                iconColor: root.theme.text
                 iconName: "back"
                 implicitHeight: 40
                 implicitWidth: 40
@@ -30,8 +32,8 @@ Item {
             Label {
                 Layout.fillWidth: true
                 color: root.theme.text
-                font.pixelSize: 18
-                font.weight: Font.DemiBold
+                font.pixelSize: 20
+                font.weight: Font.Bold
                 horizontalAlignment: Text.AlignHCenter
                 text: "设置"
             }
@@ -47,7 +49,7 @@ Item {
             Layout.fillWidth: true
             boundsBehavior: Flickable.StopAtBounds
             clip: true
-            contentHeight: settingsColumn.implicitHeight + 34
+            contentHeight: settingsColumn.implicitHeight + 26
             contentWidth: width
 
             Column {
@@ -57,7 +59,7 @@ Item {
                 width: flickable.width
 
                 Item {
-                    height: 16
+                    height: 14
                     width: 1
                 }
 
@@ -65,16 +67,77 @@ Item {
                     color: root.theme.textSecondary
                     font.pixelSize: 12
                     font.weight: Font.DemiBold
-                    leftPadding: 4
-                    text: "计时"
+                    leftPadding: 2
+                    text: "语音播报"
                 }
 
                 Rectangle {
                     border.color: root.theme.border
                     border.width: 1
                     color: root.theme.surface
+                    height: voiceSettings.implicitHeight
+                    radius: 14
+                    width: parent.width
+
+                    Column {
+                        id: voiceSettings
+
+                        leftPadding: 16
+                        rightPadding: 16
+                        width: parent.width
+
+                        ToggleSettingRow {
+                            checked: root.appController.voiceEnabled
+                            label: "语音播报"
+                            theme: root.theme
+                            width: parent.width - parent.leftPadding - parent.rightPadding
+                            onToggled: checked => root.appController.setVoiceEnabled(checked)
+                        }
+                        Rectangle {
+                            color: root.theme.border
+                            height: 1
+                            width: parent.width - parent.leftPadding - parent.rightPadding
+                        }
+                        ToggleSettingRow {
+                            checked: root.appController.countdownEnabled
+                            hint: "阶段结束前提示 3、2、1"
+                            label: "结束倒计时"
+                            theme: root.theme
+                            width: parent.width - parent.leftPadding - parent.rightPadding
+                            onToggled: checked => root.appController.setCountdownEnabled(checked)
+                        }
+                        Rectangle {
+                            color: root.theme.border
+                            height: 1
+                            width: parent.width - parent.leftPadding - parent.rightPadding
+                        }
+                        ToggleSettingRow {
+                            checked: root.appController.soundEnabled
+                            label: "提示音"
+                            theme: root.theme
+                            width: parent.width - parent.leftPadding - parent.rightPadding
+                            onToggled: checked => root.appController.setSoundEnabled(checked)
+                        }
+                    }
+                }
+
+                Item {
+                    height: 12
+                    width: 1
+                }
+                Label {
+                    color: root.theme.textSecondary
+                    font.pixelSize: 12
+                    font.weight: Font.DemiBold
+                    leftPadding: 2
+                    text: "计时"
+                }
+                Rectangle {
+                    border.color: root.theme.border
+                    border.width: 1
+                    color: root.theme.surface
                     height: timerSettings.implicitHeight
-                    radius: root.theme.radiusLarge
+                    radius: 14
                     width: parent.width
 
                     Column {
@@ -85,7 +148,6 @@ Item {
                         width: parent.width
 
                         ChoiceSettingRow {
-                            iconName: "hourglass"
                             label: "开始前倒计时"
                             labels: ["关", "3 秒", "5 秒"]
                             selected: root.appController.preparationSeconds.toString()
@@ -101,7 +163,6 @@ Item {
                         }
                         ToggleSettingRow {
                             checked: root.appController.resumeCountdownEnabled
-                            iconName: "restart"
                             label: "继续前倒计时"
                             theme: root.theme
                             width: parent.width - parent.leftPadding - parent.rightPadding
@@ -113,115 +174,44 @@ Item {
                             width: parent.width - parent.leftPadding - parent.rightPadding
                         }
                         ToggleSettingRow {
-                            checked: root.appController.countdownEnabled
-                            iconName: "bell"
-                            label: "最后 3 秒提示"
-                            theme: root.theme
-                            width: parent.width - parent.leftPadding - parent.rightPadding
-                            onToggled: checked => root.appController.setCountdownEnabled(checked)
-                        }
-                    }
-                }
-
-                Item {
-                    height: 14
-                    width: 1
-                }
-                Label {
-                    color: root.theme.textSecondary
-                    font.pixelSize: 12
-                    font.weight: Font.DemiBold
-                    leftPadding: 4
-                    text: "声音"
-                }
-                Rectangle {
-                    border.color: root.theme.border
-                    border.width: 1
-                    color: root.theme.surface
-                    height: audioSettings.implicitHeight
-                    radius: root.theme.radiusLarge
-                    width: parent.width
-
-                    Column {
-                        id: audioSettings
-
-                        leftPadding: 16
-                        rightPadding: 16
-                        width: parent.width
-
-                        ToggleSettingRow {
-                            checked: root.appController.voiceEnabled
-                            iconName: "microphone"
-                            label: "语音播报"
-                            theme: root.theme
-                            width: parent.width - parent.leftPadding - parent.rightPadding
-                            onToggled: checked => root.appController.setVoiceEnabled(checked)
-                        }
-                        Rectangle {
-                            color: root.theme.border
-                            height: 1
-                            width: parent.width - parent.leftPadding - parent.rightPadding
-                        }
-                        ToggleSettingRow {
-                            checked: root.appController.soundEnabled
-                            iconName: "volume"
-                            label: "提示音"
-                            theme: root.theme
-                            width: parent.width - parent.leftPadding - parent.rightPadding
-                            onToggled: checked => root.appController.setSoundEnabled(checked)
-                        }
-                    }
-                }
-
-                Item {
-                    height: 14
-                    width: 1
-                }
-                Label {
-                    color: root.theme.textSecondary
-                    font.pixelSize: 12
-                    font.weight: Font.DemiBold
-                    leftPadding: 4
-                    text: "外观"
-                }
-                Rectangle {
-                    border.color: root.theme.border
-                    border.width: 1
-                    color: root.theme.surface
-                    height: appearanceSettings.implicitHeight
-                    radius: root.theme.radiusLarge
-                    width: parent.width
-
-                    Column {
-                        id: appearanceSettings
-
-                        leftPadding: 16
-                        rightPadding: 16
-                        width: parent.width
-
-                        ChoiceSettingRow {
-                            iconName: "theme"
-                            label: "主题"
-                            labels: ["系统", "浅色", "深色"]
-                            selected: root.appController.themePreference
-                            theme: root.theme
-                            values: ["system", "light", "dark"]
-                            width: parent.width - parent.leftPadding - parent.rightPadding
-                            onChosen: value => root.appController.setTheme(value)
-                        }
-                        Rectangle {
-                            color: root.theme.border
-                            height: 1
-                            width: parent.width - parent.leftPadding - parent.rightPadding
-                        }
-                        ToggleSettingRow {
                             checked: root.appController.alwaysOnTop
-                            iconName: "pin"
                             label: "窗口始终置顶"
                             theme: root.theme
                             width: parent.width - parent.leftPadding - parent.rightPadding
                             onToggled: checked => root.appController.setAlwaysOnTop(checked)
                         }
+                    }
+                }
+
+                Item {
+                    height: 12
+                    width: 1
+                }
+                Label {
+                    color: root.theme.textSecondary
+                    font.pixelSize: 12
+                    font.weight: Font.DemiBold
+                    leftPadding: 2
+                    text: "通用"
+                }
+                Rectangle {
+                    border.color: root.theme.border
+                    border.width: 1
+                    color: root.theme.surface
+                    height: 62
+                    radius: 14
+                    width: parent.width
+
+                    SettingsRow {
+                        anchors.left: parent.left
+                        anchors.leftMargin: 16
+                        anchors.right: parent.right
+                        anchors.rightMargin: 16
+                        label: "深色模式"
+                        showChevron: false
+                        theme: root.theme
+                        transparentBackground: true
+                        value: "始终开启"
                     }
                 }
             }

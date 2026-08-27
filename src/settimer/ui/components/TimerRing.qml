@@ -7,8 +7,6 @@ Item {
     required property Theme theme
     property real progress: 1.0
     property color phaseColor: theme.accent
-    property string iconName: "activity"
-    property string phaseLabel: "训练"
     property string timeText: "01:00"
     property bool paused: false
 
@@ -26,7 +24,7 @@ Item {
         onPaint: {
             const context = getContext("2d");
             const center = width / 2;
-            const lineWidth = Math.max(8, width * 0.026);
+            const lineWidth = Math.max(5, width * 0.018);
             const radius = center - lineWidth - 4;
             context.reset();
             context.lineWidth = lineWidth;
@@ -44,38 +42,16 @@ Item {
         }
     }
 
-    Column {
+    Text {
         anchors.centerIn: parent
-        spacing: 9
-        width: parent.width - 70
-
-        Row {
-            anchors.horizontalCenter: parent.horizontalCenter
-            spacing: 8
-
-            LineIcon {
-                color: root.phaseColor
-                height: 19
-                name: root.iconName
-                width: 19
-            }
-            Text {
-                color: root.phaseColor
-                font.pixelSize: 18
-                font.weight: Font.DemiBold
-                text: root.phaseLabel
-            }
-        }
-
-        Text {
-            color: root.theme.text
-            font.letterSpacing: -1.5
-            font.pixelSize: root.timeText.length <= 2 ? 94 : Math.min(78, root.width * 0.2)
-            font.weight: Font.DemiBold
-            horizontalAlignment: Text.AlignHCenter
-            text: root.timeText
-            width: parent.width
-        }
+        color: root.theme.text
+        font.family: "Consolas"
+        font.letterSpacing: -1.5
+        font.pixelSize: root.timeText.length <= 2 ? 92 : Math.min(70, root.width * 0.19)
+        font.weight: Font.Bold
+        horizontalAlignment: Text.AlignHCenter
+        text: root.timeText
+        width: parent.width - 54
     }
 
     Behavior on opacity {

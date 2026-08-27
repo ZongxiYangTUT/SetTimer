@@ -3,23 +3,27 @@ import QtQuick
 QtObject {
     required property bool dark
 
-    readonly property color background: dark ? "#111512" : "#f4f3ef"
-    readonly property color backgroundSoft: dark ? "#171c18" : "#eeede8"
-    readonly property color surface: dark ? "#1c211d" : "#fbfbf9"
-    readonly property color surfaceStrong: dark ? "#242a25" : "#ffffff"
-    readonly property color text: dark ? "#f3f7f4" : "#18201c"
-    readonly property color textSecondary: dark ? "#a0aaa3" : "#68706b"
-    readonly property color textTertiary: dark ? "#707a73" : "#979d99"
-    readonly property color border: dark ? "#2d352f" : "#e2e5e2"
-    readonly property color borderStrong: dark ? "#3b453e" : "#d3d8d4"
-    readonly property color accent: dark ? "#69d58a" : "#328854"
-    readonly property color accentInk: dark ? "#102218" : "#f7fff9"
-    readonly property color accentSoft: dark ? "#203a29" : "#dff2e5"
-    readonly property color rest: dark ? "#75acd4" : "#3d729b"
-    readonly property color restSoft: dark ? "#1c303f" : "#e1edf5"
-    readonly property color danger: dark ? "#ff7770" : "#cf4d47"
-    readonly property color dangerSoft: dark ? "#412724" : "#f9e6e4"
-    readonly property color track: dark ? "#29312b" : "#e3e6e3"
+    // The approved interface is intentionally dark-only. Keep the property on the
+    // type boundary so existing controller settings remain source-compatible.
+    readonly property color background: "#000000"
+    readonly property color backgroundSoft: "#141414"
+    readonly property color surface: "#1c1c1e"
+    readonly property color surfaceStrong: "#2c2c2e"
+    readonly property color text: "#f5f5f7"
+    readonly property color textSecondary: "#a1a1a6"
+    readonly property color textTertiary: "#646468"
+    readonly property color border: "#2c2c2e"
+    readonly property color borderStrong: "#3a3a3c"
+    readonly property color accent: "#30d158"
+    readonly property color accentInk: "#000000"
+    readonly property color accentSoft: "#0b2d16"
+    readonly property color rest: "#0a84ff"
+    readonly property color restSoft: "#082847"
+    readonly property color pause: "#ff9f0a"
+    readonly property color pauseSoft: "#392608"
+    readonly property color danger: "#ff453a"
+    readonly property color dangerSoft: "#3a1715"
+    readonly property color track: "#29292b"
     readonly property int radiusSmall: 8
     readonly property int radiusMedium: 12
     readonly property int radiusLarge: 16

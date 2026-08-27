@@ -9,216 +9,192 @@ Item {
     required property AppBridge appController
     required property Theme theme
 
+    function clockText(seconds: int): string {
+        const normalized = Math.max(0, seconds);
+        const minutes = Math.floor(normalized / 60);
+        const finalSeconds = normalized % 60;
+        return `${minutes.toString().padStart(2, "0")}:${finalSeconds.toString().padStart(2, "0")}`;
+    }
+
+    function steppedClock(seconds: int, offset: int, step: int, minimum: int): string {
+        return clockText(Math.max(minimum, seconds + offset * step));
+    }
+
+    function steppedSets(offset: int): string {
+        return Math.max(1, root.appController.setCount + offset).toString();
+    }
+
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 28
+        anchors.margins: 26
         spacing: 0
 
         RowLayout {
             Layout.fillWidth: true
             Layout.preferredHeight: 42
 
-            RowLayout {
-                spacing: 10
-
-                Rectangle {
-                    color: root.theme.text
-                    implicitHeight: 28
-                    implicitWidth: 28
-                    radius: 9
-
-                    Rectangle {
-                        anchors.centerIn: parent
-                        border.color: root.theme.accent
-                        border.width: 2
-                        color: "transparent"
-                        height: 13
-                        radius: 7
-                        width: 13
-
-                        Rectangle {
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            anchors.top: parent.top
-                            anchors.topMargin: -4
-                            color: root.theme.accent
-                            height: 3
-                            radius: 2
-                            width: 7
-                        }
-                    }
-                }
-
-                Label {
-                    color: root.theme.text
-                    font.pixelSize: 17
-                    font.weight: Font.Bold
-                    text: "SetTimer"
-                }
+            Label {
+                color: root.theme.text
+                font.pixelSize: 16
+                font.weight: Font.Bold
+                text: "SETTIMER"
             }
 
             Item {
                 Layout.fillWidth: true
             }
 
-            IconButton {
-                accessibleName: "设置"
-                iconName: "settings"
-                outlined: false
-                theme: root.theme
+            Button {
+                Accessible.name: "打开设置"
+                Layout.preferredHeight: 22
+                Layout.preferredWidth: intervalLabel.implicitWidth + 18
+                hoverEnabled: true
+
+                contentItem: Label {
+                    id: intervalLabel
+
+                    color: root.theme.textSecondary
+                    font.pixelSize: 9
+                    font.weight: Font.DemiBold
+                    horizontalAlignment: Text.AlignHCenter
+                    text: "INTERVALS"
+                    verticalAlignment: Text.AlignVCenter
+                }
+                background: Rectangle {
+                    color: root.theme.surface
+                    radius: 5
+                }
                 onClicked: root.appController.openSettings()
             }
         }
 
         Item {
-            Layout.preferredHeight: Math.max(42, root.height * 0.08)
+            Layout.preferredHeight: 18
         }
 
         RowLayout {
-            Layout.alignment: Qt.AlignHCenter
-            spacing: 10
+            Layout.fillWidth: true
+            Layout.preferredHeight: 164
+            spacing: 8
 
-            LineIcon {
-                Layout.preferredHeight: 28
-                Layout.preferredWidth: 28
-                color: root.theme.accent
-                name: "activity"
+            PlanPickerColumn {
+                Layout.fillWidth: true
+                label: "组数 (SETS)"
+                nextOne: root.steppedSets(1)
+                nextTwo: root.steppedSets(2)
+                previousOne: root.steppedSets(-1)
+                previousTwo: root.steppedSets(-2)
+                theme: root.theme
+                value: root.steppedSets(0)
+                onClicked: {
+                    setDialog.selectedValue = root.appController.setCount;
+                    setDialog.open();
+                }
             }
-            Label {
-                color: root.theme.text
-                font.pixelSize: Math.min(32, Math.max(26, root.width * 0.06))
-                font.weight: Font.Bold
-                text: "训练计划"
-            }
-        }
 
-        Item {
-            Layout.preferredHeight: 30
+            PlanPickerColumn {
+                Layout.fillWidth: true
+                label: "训练 (WORK)"
+                nextOne: root.steppedClock(root.appController.workSeconds, 1, 30, 1)
+                nextTwo: root.steppedClock(root.appController.workSeconds, 2, 30, 1)
+                previousOne: root.steppedClock(root.appController.workSeconds, -1, 30, 1)
+                previousTwo: root.steppedClock(root.appController.workSeconds, -2, 30, 1)
+                theme: root.theme
+                value: root.clockText(root.appController.workSeconds)
+                onClicked: {
+                    workDialog.durationSeconds = root.appController.workSeconds;
+                    workDialog.open();
+                }
+            }
+
+            PlanPickerColumn {
+                Layout.fillWidth: true
+                label: "休息 (REST)"
+                nextOne: root.steppedClock(root.appController.restSeconds, 1, 15, 0)
+                nextTwo: root.steppedClock(root.appController.restSeconds, 2, 15, 0)
+                previousOne: root.steppedClock(root.appController.restSeconds, -1, 15, 0)
+                previousTwo: root.steppedClock(root.appController.restSeconds, -2, 15, 0)
+                theme: root.theme
+                value: root.clockText(root.appController.restSeconds)
+                onClicked: {
+                    restDialog.durationSeconds = root.appController.restSeconds;
+                    restDialog.open();
+                }
+            }
         }
 
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: configColumn.implicitHeight
-            border.color: root.theme.border
-            border.width: 1
+            Layout.preferredHeight: 66
+            Layout.topMargin: 22
             color: root.theme.surface
-            radius: root.theme.radiusLarge
+            radius: 10
 
             Column {
-                id: configColumn
+                anchors.centerIn: parent
+                spacing: 4
 
-                anchors.left: parent.left
-                anchors.right: parent.right
-
-                SettingsRow {
-                    iconName: "activity"
-                    label: "训练时间"
-                    theme: root.theme
-                    transparentBackground: true
-                    value: root.appController.workDurationLabel
-                    width: parent.width
-                    onClicked: {
-                        workDialog.durationSeconds = root.appController.workSeconds;
-                        workDialog.open();
-                    }
-                }
-
-                Rectangle {
+                Label {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    color: root.theme.border
-                    height: 1
-                    width: parent.width - 32
+                    color: root.theme.text
+                    font.pixelSize: 12
+                    font.weight: Font.Medium
+                    text: `${root.appController.setCount} 组 × ${root.clockText(root.appController.workSeconds)} 训练 + ${root.clockText(root.appController.restSeconds)} 休息`
                 }
-
-                SettingsRow {
-                    iconName: "rest"
-                    label: "休息时间"
-                    theme: root.theme
-                    transparentBackground: true
-                    value: root.appController.restDurationLabel
-                    width: parent.width
-                    onClicked: {
-                        restDialog.durationSeconds = root.appController.restSeconds;
-                        restDialog.open();
-                    }
-                }
-
-                Rectangle {
+                Label {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    color: root.theme.border
-                    height: 1
-                    width: parent.width - 32
-                }
-
-                SettingsRow {
-                    iconName: "sets"
-                    label: "训练组数"
-                    theme: root.theme
-                    transparentBackground: true
-                    value: `${root.appController.setCount} 组`
-                    width: parent.width
-                    onClicked: {
-                        setDialog.selectedValue = root.appController.setCount;
-                        setDialog.open();
-                    }
+                    color: root.theme.accent
+                    font.pixelSize: 11
+                    text: `总计 ${root.appController.sessionEstimate}`
                 }
             }
         }
 
-        RowLayout {
-            Layout.alignment: Qt.AlignHCenter
-            Layout.topMargin: 23
-            spacing: 9
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 54
+            Layout.topMargin: 12
+            color: root.theme.surface
+            radius: 10
 
-            Rectangle {
-                Layout.preferredHeight: 1
-                Layout.preferredWidth: 30
-                color: root.theme.borderStrong
-            }
-            LineIcon {
-                Layout.preferredHeight: 16
-                Layout.preferredWidth: 16
-                color: root.theme.textTertiary
-                name: "clock"
-            }
-            Label {
-                color: root.theme.textTertiary
-                font.pixelSize: 12
-                text: root.appController.sessionEstimate
-            }
-            Rectangle {
-                Layout.preferredHeight: 14
-                Layout.preferredWidth: 1
-                color: root.theme.borderStrong
-            }
-            LineIcon {
-                Layout.preferredHeight: 16
-                Layout.preferredWidth: 16
-                color: root.theme.textTertiary
-                name: "sets"
-            }
-            Label {
-                color: root.theme.textTertiary
-                font.pixelSize: 12
-                text: `${root.appController.setCount} 组`
-            }
-            Rectangle {
-                Layout.preferredHeight: 1
-                Layout.preferredWidth: 30
-                color: root.theme.borderStrong
+            RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: 15
+                anchors.rightMargin: 12
+                spacing: 10
+
+                LineIcon {
+                    Layout.preferredHeight: 20
+                    Layout.preferredWidth: 20
+                    color: root.theme.textSecondary
+                    name: "microphone"
+                }
+                Label {
+                    Layout.fillWidth: true
+                    color: root.theme.text
+                    font.pixelSize: 13
+                    font.weight: Font.Medium
+                    text: "语音播报 (VOICE)"
+                }
+                ToggleSwitch {
+                    checked: root.appController.voiceEnabled
+                    theme: root.theme
+                    onClicked: root.appController.setVoiceEnabled(checked)
+                }
             }
         }
 
         Item {
             Layout.fillHeight: true
-            Layout.minimumHeight: 22
+            Layout.minimumHeight: 24
         }
 
         PrimaryButton {
             Layout.fillWidth: true
-            iconName: "play"
-            text: "开始"
+            Layout.preferredHeight: 52
+            text: "开始 (START)"
             theme: root.theme
-            variant: "primary"
+            variant: "inverted"
             onClicked: root.appController.startSession()
         }
     }

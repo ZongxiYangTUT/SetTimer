@@ -12,6 +12,8 @@ Button {
     property color fillColor: {
         if (variant === "primary")
             return theme.accent;
+        if (variant === "inverted")
+            return theme.text;
         if (variant === "danger")
             return theme.dangerSoft;
         if (variant === "ghost")
@@ -21,6 +23,8 @@ Button {
     property color labelColor: {
         if (variant === "primary")
             return theme.accentInk;
+        if (variant === "inverted")
+            return theme.background;
         if (variant === "danger")
             return theme.danger;
         return theme.text;
@@ -58,7 +62,7 @@ Button {
         border.width: 1
         color: root.enabled ? root.fillColor : root.theme.backgroundSoft
         opacity: root.hovered && !root.down ? 0.92 : 1.0
-        radius: root.theme.radiusMedium
+        radius: height / 2
 
         Behavior on color {
             ColorAnimation {

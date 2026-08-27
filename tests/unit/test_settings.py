@@ -59,7 +59,7 @@ class QtSettingsStoreTests(unittest.TestCase):
         self.assertEqual(loaded.set_count, 5)
         self.assertEqual(loaded.preparation_seconds, 3)
         self.assertFalse(loaded.voice_enabled)
-        self.assertEqual(loaded.theme, ThemePreference.SYSTEM)
+        self.assertEqual(loaded.theme, ThemePreference.DARK)
 
 
 if __name__ == "__main__":

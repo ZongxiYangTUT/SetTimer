@@ -12,120 +12,126 @@ Item {
     required property Theme theme
     signal fullscreenRequested
 
+    readonly property bool pausedState: appController.paused || appController.resumeCount > 0
+    readonly property color phaseColor: pausedState ? theme.pause : theme.phaseColor(appController.phaseKey)
+    readonly property color phaseSoftColor: pausedState ? theme.pauseSoft : (appController.phaseKey === "rest" ? theme.restSoft : theme.accentSoft)
+    readonly property string stateText: {
+        if (appController.resumeCount > 0)
+            return "即将继续 (RESUME)";
+        if (appController.paused)
+            return "已暂停 (PAUSED)";
+        if (appController.preparing)
+            return "准备中 (READY)";
+        if (appController.phaseKey === "rest")
+            return "休息中 (REST)";
+        return "训练中 (WORK)";
+    }
+
     function requestStop(): void {
         stopDialog.open();
     }
 
-    readonly property color phaseColor: theme.phaseColor(appController.phaseKey)
-    readonly property string phaseIcon: {
-        if (appController.resumeCount > 0)
-            return "play";
-        if (appController.paused)
-            return "pause";
-        if (appController.preparing)
-            return "hourglass";
-        return appController.phaseKey === "rest" ? "rest" : "activity";
-    }
-
     Rectangle {
-        anchors.centerIn: parent
-        color: root.appController.phaseKey === "rest" ? root.theme.restSoft : root.theme.accentSoft
-        height: Math.min(parent.width, parent.height) * 0.82
-        opacity: root.theme.dark ? 0.18 : 0.28
-        radius: width / 2
-        width: height
+        anchors.fill: parent
+        color: root.pausedState ? "#252525" : root.theme.background
 
         Behavior on color {
             ColorAnimation {
-                duration: root.theme.durationSlow
+                duration: root.theme.durationNormal
             }
         }
     }
 
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 28
+        anchors.margins: 26
         spacing: 0
 
         RowLayout {
             Layout.fillWidth: true
-            Layout.preferredHeight: 44
+            Layout.preferredHeight: 42
 
-            Column {
-                spacing: 6
-
-                Label {
-                    color: root.theme.textSecondary
-                    font.pixelSize: 13
-                    font.weight: Font.DemiBold
-                    text: root.appController.preparing ? "即将开始" : `第 ${root.appController.currentSet} / ${root.appController.sessionSetCount} 组`
-                }
-
-                Row {
-                    spacing: 4
-                    visible: !root.appController.preparing
-
-                    Repeater {
-                        model: Math.min(root.appController.sessionSetCount, 12)
-
-                        Rectangle {
-                            id: setMarker
-
-                            required property int index
-
-                            color: setMarker.index < root.appController.currentSet ? root.phaseColor : root.theme.track
-                            height: 3
-                            radius: 2
-                            width: 13
-                        }
-                    }
-                }
+            IconButton {
+                accessibleName: root.appController.muted ? "恢复声音" : "静音"
+                fillColor: "transparent"
+                iconColor: root.appController.muted ? root.phaseColor : root.theme.textSecondary
+                iconName: root.appController.muted ? "volume-off" : "volume"
+                implicitHeight: 38
+                implicitWidth: 38
+                outlined: false
+                theme: root.theme
+                onClicked: root.appController.toggleMuted()
             }
 
             Item {
                 Layout.fillWidth: true
             }
 
-            RowLayout {
-                spacing: 8
+            IconButton {
+                accessibleName: "全屏"
+                fillColor: "transparent"
+                iconColor: root.theme.textSecondary
+                iconName: "expand"
+                implicitHeight: 38
+                implicitWidth: 38
+                outlined: false
+                theme: root.theme
+                onClicked: root.fullscreenRequested()
+            }
+        }
 
-                IconButton {
-                    accessibleName: root.appController.muted ? "恢复声音" : "静音"
-                    fillColor: root.appController.muted ? root.theme.accentSoft : root.theme.surface
-                    iconColor: root.appController.muted ? root.theme.accent : root.theme.textSecondary
-                    iconName: root.appController.muted ? "volume-off" : "volume"
-                    implicitHeight: 40
-                    implicitWidth: 40
-                    theme: root.theme
-                    onClicked: root.appController.toggleMuted()
+        Rectangle {
+            Layout.alignment: Qt.AlignHCenter
+            Layout.preferredHeight: 27
+            Layout.preferredWidth: stateRow.implicitWidth + 22
+            Layout.topMargin: 12
+            color: root.phaseSoftColor
+            radius: height / 2
+
+            Row {
+                id: stateRow
+
+                anchors.centerIn: parent
+                spacing: 7
+
+                Rectangle {
+                    anchors.verticalCenter: parent.verticalCenter
+                    color: root.phaseColor
+                    height: 7
+                    radius: 4
+                    width: 7
                 }
-
-                IconButton {
-                    accessibleName: "全屏"
-                    iconName: "expand"
-                    implicitHeight: 40
-                    implicitWidth: 40
-                    theme: root.theme
-                    onClicked: root.fullscreenRequested()
+                Label {
+                    color: root.phaseColor
+                    font.pixelSize: 11
+                    font.weight: Font.DemiBold
+                    text: root.stateText
                 }
             }
         }
 
+        Label {
+            Layout.alignment: Qt.AlignHCenter
+            Layout.topMargin: 10
+            color: root.theme.textSecondary
+            font.pixelSize: 14
+            font.weight: Font.DemiBold
+            text: root.appController.preparing ? "即将开始" : `第 ${root.appController.currentSet} / ${root.appController.sessionSetCount} 组`
+        }
+
         Item {
             Layout.fillHeight: true
-            Layout.minimumHeight: 8
+            Layout.minimumHeight: 14
         }
 
         TimerRing {
             Layout.alignment: Qt.AlignHCenter
-            Layout.maximumHeight: 430
-            Layout.maximumWidth: 430
-            Layout.preferredHeight: Math.min(360, root.height * 0.52)
+            Layout.maximumHeight: 360
+            Layout.maximumWidth: 360
+            Layout.preferredHeight: Math.min(332, root.height * 0.46)
             Layout.preferredWidth: Layout.preferredHeight
-            iconName: root.phaseIcon
-            paused: root.appController.paused
+            paused: root.pausedState
             phaseColor: root.phaseColor
-            phaseLabel: root.appController.phaseLabel
             progress: root.appController.progress
             theme: root.theme
             timeText: root.appController.remainingText
@@ -133,55 +139,37 @@ Item {
 
         Item {
             Layout.fillHeight: true
-            Layout.minimumHeight: 8
+            Layout.minimumHeight: 18
         }
 
         RowLayout {
             Layout.alignment: Qt.AlignHCenter
-            Layout.preferredHeight: 30
-            spacing: 7
+            Layout.bottomMargin: 8
+            spacing: 34
 
-            LineIcon {
-                Layout.preferredHeight: 16
-                Layout.preferredWidth: 16
-                color: root.theme.textTertiary
-                name: "clock"
+            IconButton {
+                accessibleName: "结束训练"
+                fillColor: root.pausedState ? "#3a3a3c" : root.theme.surface
+                iconColor: root.theme.text
+                iconName: "stop"
+                implicitHeight: 58
+                implicitWidth: 58
+                outlined: false
+                theme: root.theme
+                onClicked: stopDialog.open()
             }
-            Label {
-                color: root.theme.textSecondary
-                font.pixelSize: 12
-                font.weight: Font.DemiBold
-                text: root.appController.totalRemainingText
-            }
-        }
-
-        RowLayout {
-            Layout.alignment: Qt.AlignHCenter
-            Layout.topMargin: 17
-            spacing: 18
 
             IconButton {
                 accessibleName: root.appController.resumeCount > 0 ? "取消继续" : root.appController.paused ? "继续" : "暂停"
                 enabled: root.appController.canPause
-                fillColor: root.phaseColor
-                iconColor: root.theme.accentInk
+                fillColor: root.theme.text
+                iconColor: root.theme.background
                 iconName: root.appController.resumeCount > 0 ? "close" : root.appController.paused ? "play" : "pause"
                 implicitHeight: 68
                 implicitWidth: 68
                 outlined: false
                 theme: root.theme
                 onClicked: root.appController.pauseOrResume()
-            }
-
-            IconButton {
-                accessibleName: "结束训练"
-                fillColor: root.theme.surface
-                iconColor: root.theme.danger
-                iconName: "stop"
-                implicitHeight: 54
-                implicitWidth: 54
-                theme: root.theme
-                onClicked: stopDialog.open()
             }
         }
     }
@@ -192,40 +180,40 @@ Item {
         anchors.centerIn: Overlay.overlay
         closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
         dim: true
-        height: 232
+        height: 218
         modal: true
-        padding: 24
-        width: Math.min(380, Overlay.overlay ? Overlay.overlay.width - 40 : 380)
+        padding: 22
+        width: Math.min(360, Overlay.overlay ? Overlay.overlay.width - 40 : 360)
 
         background: Rectangle {
-            border.color: root.theme.border
+            border.color: root.theme.borderStrong
             border.width: 1
             color: root.theme.surface
-            radius: 20
+            radius: 18
         }
 
         contentItem: ColumnLayout {
-            spacing: 10
+            spacing: 12
 
             Rectangle {
                 Layout.alignment: Qt.AlignHCenter
-                Layout.preferredHeight: 46
-                Layout.preferredWidth: 46
+                Layout.preferredHeight: 44
+                Layout.preferredWidth: 44
                 color: root.theme.dangerSoft
-                radius: 23
+                radius: 22
 
                 LineIcon {
                     anchors.centerIn: parent
                     color: root.theme.danger
-                    height: 24
+                    height: 22
                     name: "stop"
-                    width: 24
+                    width: 22
                 }
             }
             Label {
                 Layout.alignment: Qt.AlignHCenter
                 color: root.theme.text
-                font.pixelSize: 20
+                font.pixelSize: 18
                 font.weight: Font.DemiBold
                 text: "结束本次训练？"
             }
@@ -238,14 +226,12 @@ Item {
 
                 PrimaryButton {
                     Layout.fillWidth: true
-                    iconName: "close"
                     text: "取消"
                     theme: root.theme
                     onClicked: stopDialog.close()
                 }
                 PrimaryButton {
                     Layout.fillWidth: true
-                    iconName: "stop"
                     text: "结束"
                     theme: root.theme
                     variant: "danger"

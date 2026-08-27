@@ -9,142 +9,119 @@ Item {
     required property AppBridge appController
     required property Theme theme
 
+    function clockText(seconds: int): string {
+        const normalized = Math.max(0, seconds);
+        const minutes = Math.floor(normalized / 60);
+        const finalSeconds = normalized % 60;
+        return `${minutes.toString().padStart(2, "0")}:${finalSeconds.toString().padStart(2, "0")}`;
+    }
+
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 32
+        anchors.margins: 28
         spacing: 0
 
         Item {
-            Layout.fillHeight: true
+            Layout.preferredHeight: 58
         }
 
-        Item {
+        Rectangle {
             Layout.alignment: Qt.AlignHCenter
-            Layout.preferredHeight: 124
-            Layout.preferredWidth: 124
+            Layout.preferredHeight: 62
+            Layout.preferredWidth: 62
+            border.color: root.theme.accent
+            border.width: 3
+            color: "transparent"
+            radius: width / 2
 
-            Rectangle {
-                anchors.fill: parent
-                color: root.theme.accentSoft
-                radius: width / 2
-            }
-            Rectangle {
+            LineIcon {
                 anchors.centerIn: parent
                 color: root.theme.accent
-                height: 82
-                radius: 41
-                width: 82
-
-                LineIcon {
-                    anchors.centerIn: parent
-                    color: root.theme.accentInk
-                    height: 42
-                    name: "check"
-                    strokeWidth: 2.2
-                    width: 42
-                }
+                height: 30
+                name: "check"
+                strokeWidth: 2.2
+                width: 30
             }
         }
 
         Label {
             Layout.alignment: Qt.AlignHCenter
-            Layout.topMargin: 28
+            Layout.topMargin: 20
             color: root.theme.text
-            font.pixelSize: 34
+            font.pixelSize: 28
             font.weight: Font.Bold
-            text: "训练完成"
+            text: "训练完成!"
         }
 
         Rectangle {
-            Layout.alignment: Qt.AlignHCenter
             Layout.fillWidth: true
-            Layout.maximumWidth: 370
-            Layout.preferredHeight: 94
-            Layout.topMargin: 34
+            Layout.preferredHeight: statsColumn.implicitHeight + 28
+            Layout.topMargin: 28
             border.color: root.theme.border
             border.width: 1
             color: root.theme.surface
-            radius: root.theme.radiusLarge
+            radius: 12
 
-            RowLayout {
-                anchors.fill: parent
-                anchors.margins: 18
+            Column {
+                id: statsColumn
 
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    spacing: 6
+                anchors.left: parent.left
+                anchors.leftMargin: 16
+                anchors.right: parent.right
+                anchors.rightMargin: 16
+                anchors.verticalCenter: parent.verticalCenter
 
-                    LineIcon {
-                        Layout.alignment: Qt.AlignHCenter
-                        Layout.preferredHeight: 18
-                        Layout.preferredWidth: 18
-                        color: root.theme.textTertiary
-                        name: "sets"
-                    }
-
-                    Label {
-                        Layout.alignment: Qt.AlignHCenter
-                        color: root.theme.text
-                        font.pixelSize: 23
-                        font.weight: Font.DemiBold
-                        text: root.appController.sessionSetCount
-                    }
+                StatRow {
+                    label: "总时长"
+                    theme: root.theme
+                    value: root.appController.elapsedText
+                    width: parent.width
                 }
-                Rectangle {
-                    Layout.preferredHeight: 38
-                    Layout.preferredWidth: 1
-                    color: root.theme.borderStrong
+                StatRow {
+                    label: "训练时间"
+                    theme: root.theme
+                    value: root.clockText(root.appController.workSeconds * root.appController.sessionSetCount)
+                    width: parent.width
                 }
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    spacing: 6
-
-                    LineIcon {
-                        Layout.alignment: Qt.AlignHCenter
-                        Layout.preferredHeight: 18
-                        Layout.preferredWidth: 18
-                        color: root.theme.textTertiary
-                        name: "clock"
-                    }
-
-                    Label {
-                        Layout.alignment: Qt.AlignHCenter
-                        color: root.theme.text
-                        font.pixelSize: 23
-                        font.weight: Font.DemiBold
-                        text: root.appController.elapsedText
-                    }
+                StatRow {
+                    label: "休息时间"
+                    theme: root.theme
+                    value: root.clockText(root.appController.restSeconds * Math.max(0, root.appController.sessionSetCount - 1))
+                    width: parent.width
                 }
-            }
-        }
-
-        ColumnLayout {
-            Layout.alignment: Qt.AlignHCenter
-            Layout.fillWidth: true
-            Layout.maximumWidth: 370
-            Layout.topMargin: 34
-            spacing: 7
-
-            PrimaryButton {
-                Layout.fillWidth: true
-                iconName: "restart"
-                text: "再来一次"
-                theme: root.theme
-                variant: "primary"
-                onClicked: root.appController.startSession()
-            }
-            PrimaryButton {
-                Layout.fillWidth: true
-                iconName: "check"
-                text: "完成"
-                theme: root.theme
-                variant: "ghost"
-                onClicked: root.appController.completeSession()
+                StatRow {
+                    accentValue: true
+                    label: "完成组数"
+                    showDivider: false
+                    theme: root.theme
+                    value: `${root.appController.sessionSetCount} / ${root.appController.sessionSetCount}`
+                    width: parent.width
+                }
             }
         }
 
         Item {
             Layout.fillHeight: true
+            Layout.minimumHeight: 30
+        }
+
+        PrimaryButton {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 52
+            text: "再来一次 (REPEAT)"
+            theme: root.theme
+            variant: "inverted"
+            onClicked: root.appController.startSession()
+        }
+
+        PrimaryButton {
+            Layout.alignment: Qt.AlignHCenter
+            Layout.preferredHeight: 42
+            Layout.preferredWidth: 160
+            text: "返回主页 (BACK)"
+            theme: root.theme
+            variant: "ghost"
+            onClicked: root.appController.completeSession()
         }
     }
 }

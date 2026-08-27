@@ -26,7 +26,7 @@ class AppSettings:
     countdown_enabled: bool = True
     voice_enabled: bool = True
     sound_enabled: bool = True
-    theme: ThemePreference = ThemePreference.SYSTEM
+    theme: ThemePreference = ThemePreference.DARK
     always_on_top: bool = False
 
 
