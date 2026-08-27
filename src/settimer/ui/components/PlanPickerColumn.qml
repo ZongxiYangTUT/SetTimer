@@ -90,15 +90,8 @@ Item {
         Component.onCompleted: ready = true
         onCurrentIndexChanged: {
             if (ready)
-                commitDelay.restart();
+                root.valueSelected(root.selectedValue(currentIndex));
         }
-    }
-
-    Timer {
-        id: commitDelay
-
-        interval: 120
-        onTriggered: root.valueSelected(root.selectedValue(picker.currentIndex))
     }
 
     Rectangle {

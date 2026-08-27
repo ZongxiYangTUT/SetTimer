@@ -83,8 +83,14 @@ class QmlSmokeTests(unittest.TestCase):
 
             work_picker = cast(QObject, window.findChild(QObject, "workPicker"))
             work_picker.setProperty("currentIndex", 4)
-            QTest.qWait(180)
+            set_picker = cast(QObject, window.findChild(QObject, "setPicker"))
+            set_picker.setProperty("currentIndex", 6)
+            rest_picker = cast(QObject, window.findChild(QObject, "restPicker"))
+            rest_picker.setProperty("currentIndex", 4)
+            self.application.processEvents()
             self.assertEqual(controller.work_seconds, 150)
+            self.assertEqual(controller.set_count, 7)
+            self.assertEqual(controller.rest_seconds, 60)
 
             controller.start_session()
             QTest.qWait(80)

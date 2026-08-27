@@ -139,6 +139,27 @@ class AppControllerTests(unittest.TestCase):
         self.assertEqual(self.store.settings.theme, ThemePreference.DARK)
         self.assertEqual(self.store.save_count, 4)
 
+    def test_session_plan_is_restored_after_restart(self) -> None:
+        self.controller.set_set_count(7)
+        self.controller.set_work_seconds(150)
+        self.controller.set_rest_seconds(45)
+        self.controller.shutdown()
+
+        self.controller = AppController(
+            clock=self.clock,
+            settings_store=self.store,
+            speech=self.speech,
+            audio=self.audio,
+            power=self.power,
+            history_store=self.history,
+            wall_now=lambda: self.wall_time,
+            auto_start_updates=False,
+        )
+
+        self.assertEqual(self.controller.set_count, 7)
+        self.assertEqual(self.controller.work_seconds, 150)
+        self.assertEqual(self.controller.rest_seconds, 45)
+
     def test_navigation_pause_mute_and_stop_flow(self) -> None:
         self.controller.open_settings()
         self.assertEqual(self.controller.screen, Screen.SETTINGS)
