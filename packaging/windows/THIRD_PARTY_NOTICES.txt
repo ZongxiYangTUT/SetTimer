@@ -1,0 +1,28 @@
+SetTimer 第三方软件声明
+=======================
+
+SetTimer 的 Windows 发行包包含以下第三方组件：
+
+1. PySide6 与 Qt 6
+   许可证：LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+   项目：https://pyside.org/
+   源码：https://code.qt.io/cgit/pyside/pyside-setup.git/
+
+2. sherpa-onnx
+   许可证：Apache License 2.0
+   项目：https://github.com/k2-fsa/sherpa-onnx
+
+3. Kokoro-82M-v1.1-zh 模型
+   许可证：Apache License 2.0
+   项目：https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh
+
+4. Noto Sans SC
+   许可证：SIL Open Font License 1.1
+   项目：https://fonts.google.com/noto/specimen/Noto+Sans+SC
+
+5. Inno Setup 简体中文翻译
+   许可证：MIT License
+   项目：https://github.com/kira-96/Inno-Setup-Chinese-Simplified-Translation
+
+发行包使用动态链接的 Qt 库。完整的 SetTimer、Kokoro、sherpa-onnx 和字体许可证
+随安装内容一并提供。各第三方组件仍由其权利人拥有。

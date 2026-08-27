@@ -4,6 +4,12 @@ SetTimer 是一款简洁的 Windows 桌面间歇计时器。滚动选择组数�
 
 当前版本面向 Windows 10/11，使用 Python、PySide6 和 Qt Quick/QML 构建，不依赖浏览器或本地服务。
 
+## 安装
+
+从 [GitHub Releases](https://github.com/ZongxiYangTUT/SetTimer/releases) 下载
+`SetTimer-版本号-windows-x64-setup.exe`。安装器默认包含 Kokoro 离线中文声音，
+不需要管理员权限；也可以选择精简安装，仅使用 Windows 系统声音。
+
 ## 产品截图
 
 | 主界面 | 训练计时 |
@@ -50,9 +56,14 @@ Kokoro 语音包完全在本机运行。模型压缩包约 140 MB，解压后约
 
 # 检查、打包并验证成品启动
 .\scripts\package.ps1
+
+# 生成并验证正式安装包
+.\scripts\build-release.ps1 -Version 0.1.0
 ```
 
 打包结果位于 `dist/SetTimer/`。发布或复制时需要保留整个目录，不能只复制其中的 `SetTimer.exe`。
+正式安装包与 SHA-256 校验文件位于 `release/`；完整流程见
+[`docs/RELEASING.md`](docs/RELEASING.md)。
 
 ## 快捷键
 

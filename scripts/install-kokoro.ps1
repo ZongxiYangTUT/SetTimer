@@ -15,8 +15,12 @@ $setTimerRequiredFiles = @(
     "model.int8.onnx",
     "voices.bin",
     "tokens.txt",
+    "lexicon-us-en.txt",
     "lexicon-zh.txt",
-    "espeak-ng-data"
+    "espeak-ng-data",
+    "phone-zh.fst",
+    "date-zh.fst",
+    "number-zh.fst"
 )
 
 function Test-SetTimerModel {

@@ -1,9 +1,57 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 from pathlib import Path
+import tomllib
 
 import PySide6
 from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs
+from PyInstaller.utils.win32.versioninfo import (
+    FixedFileInfo,
+    StringFileInfo,
+    StringStruct,
+    StringTable,
+    VarFileInfo,
+    VarStruct,
+    VSVersionInfo,
+)
+
+
+project = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
+app_version = project["project"]["version"]
+version_parts = tuple(int(part) for part in app_version.split("."))
+version_quad = (*version_parts, *(0 for _ in range(4 - len(version_parts))))
+version_info = VSVersionInfo(
+    ffi=FixedFileInfo(
+        filevers=version_quad,
+        prodvers=version_quad,
+        mask=0x3F,
+        flags=0,
+        OS=0x40004,
+        fileType=0x1,
+        subtype=0,
+        date=(0, 0),
+    ),
+    kids=[
+        StringFileInfo(
+            [
+                StringTable(
+                    "040904B0",
+                    [
+                        StringStruct("CompanyName", "ZongxiYangTUT"),
+                        StringStruct("FileDescription", "SetTimer 间歇训练计时器"),
+                        StringStruct("FileVersion", app_version),
+                        StringStruct("InternalName", "SetTimer"),
+                        StringStruct("LegalCopyright", "Copyright (c) 2026 ZongxiYangTUT"),
+                        StringStruct("OriginalFilename", "SetTimer.exe"),
+                        StringStruct("ProductName", "SetTimer"),
+                        StringStruct("ProductVersion", app_version),
+                    ],
+                )
+            ]
+        ),
+        VarFileInfo([VarStruct("Translation", [1033, 1200])]),
+    ],
+)
 
 
 datas = collect_data_files(
@@ -67,6 +115,7 @@ executable = EXE(
     upx=False,
     console=False,
     icon="src/settimer/assets/icon.ico",
+    version=version_info,
 )
 collection = COLLECT(
     executable,
