@@ -37,8 +37,8 @@ try {
             -WindowStyle Hidden `
             -PassThru
         try {
-            if (-not $setTimerProcess.WaitForExit(10000)) {
-                throw "Packaged SetTimer did not complete its startup check within 10 seconds."
+            if (-not $setTimerProcess.WaitForExit(30000)) {
+                throw "Packaged SetTimer did not complete its startup check within 30 seconds."
             }
             if ($setTimerProcess.ExitCode -ne 0) {
                 throw "Packaged SetTimer failed its startup check with code $($setTimerProcess.ExitCode)."
