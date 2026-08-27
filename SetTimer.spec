@@ -1,5 +1,8 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+from pathlib import Path
+
+import PySide6
 from PyInstaller.utils.hooks import collect_data_files
 
 
@@ -7,6 +10,8 @@ datas = collect_data_files(
     "settimer",
     includes=["assets/*", "ui/*.qml", "ui/components/*.qml"],
 )
+
+pyside_directory = Path(PySide6.__file__).resolve().parent
 
 analysis = Analysis(
     ["src/settimer/main.py"],
@@ -25,6 +30,22 @@ analysis = Analysis(
     noarchive=False,
     optimize=1,
 )
+
+# Qt 6 links to Windows' system ICU by the generic name icuuc.dll.  A build
+# environment can put an unrelated versioned ICU on PATH; PyInstaller may then
+# bundle it under the generic name, shadow System32 and breaking QtCore imports.
+# Preserve a future ICU shipped by PySide itself, but reject unrelated copies.
+analysis.binaries = [
+    binary
+    for binary in analysis.binaries
+    if not (
+        (
+            Path(binary[0]).name.lower() == "icuuc.dll"
+            or Path(binary[0]).name.lower().startswith("icudt")
+        )
+        and not Path(binary[1]).resolve().is_relative_to(pyside_directory)
+    )
+]
 pyz = PYZ(analysis.pure)
 
 executable = EXE(

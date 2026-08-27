@@ -61,7 +61,9 @@ py -3 -m venv .venv
 .\scripts\package.ps1
 ```
 
-PyInstaller 会先运行完整质量检查，再将 Windows 版本输出到 `dist/SetTimer/`。发布包应在 Windows 目标环境中构建和验证。
+PyInstaller 会先运行完整质量检查，再将 Windows 版本输出到 `dist/SetTimer/`，并启动成品确认主窗口能够正常打开。发布包应在 Windows 目标环境中构建和验证。
+
+`SetTimer` 当前使用目录分发模式。发布或复制时必须保留整个 `dist/SetTimer/` 目录，不能只复制其中的 `SetTimer.exe`。
 
 ## 快捷键
 

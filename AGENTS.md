@@ -1331,6 +1331,14 @@ on Windows when practical.
 The application should be tested and packaged on Windows. Linux build and runtime failures are not a
 current release blocker.
 
+Windows packaging must resolve native dependencies in a clean environment so unrelated DLLs from a
+developer `PATH` cannot enter the bundle. A package check must verify that the built executable loads
+Qt, loads the QML root window, and exits successfully in startup-check mode; merely observing that a
+process remains alive is insufficient because an unhandled-exception dialog also keeps it alive.
+
+The current PyInstaller output is an onedir distribution. Deliver the complete `dist/SetTimer/`
+directory, including `_internal/`, rather than copying `SetTimer.exe` alone.
+
 ---
 
 # Agent Workflow

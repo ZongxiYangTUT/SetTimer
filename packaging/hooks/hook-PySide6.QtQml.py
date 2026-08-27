@@ -10,7 +10,7 @@ from PyInstaller.utils.hooks.qt import add_qt6_dependencies, pyside6_library_inf
 hiddenimports, binaries, datas = add_qt6_dependencies(__file__)
 qml_binaries, qml_datas = pyside6_library_info.collect_qtqml_files()
 
-_QML_ROOT = "PySide6/Qt/qml/"
+_QML_ROOT = "PySide6/qml/"
 _REQUIRED_MODULES = {
     "QtCore",
     "QtQml",
@@ -22,13 +22,14 @@ _REQUIRED_MODULES = {
     "QtQuick/Controls/Basic/impl",
     "QtQuick/Controls/impl",
     "QtQuick/Layouts",
+    "QtQuick/Shapes",
     "QtQuick/Templates",
     "QtQuick/Window",
 }
 
 
 def _is_required(entry: tuple[str, str]) -> bool:
-    destination = entry[1]
+    destination = entry[1].replace("\\", "/")
     if not destination.startswith(_QML_ROOT):
         return False
     module = destination.removeprefix(_QML_ROOT)

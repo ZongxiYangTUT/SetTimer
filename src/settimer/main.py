@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import logging
+import os
 import sys
 from importlib import resources
 from pathlib import Path
 
-from PySide6.QtCore import QCoreApplication, QUrl
+from PySide6.QtCore import QCoreApplication, QTimer, QUrl
 from PySide6.QtGui import QFontDatabase, QGuiApplication, QIcon
 from PySide6.QtQml import QQmlApplicationEngine
 from PySide6.QtQuickControls2 import QQuickStyle
@@ -67,6 +68,8 @@ def main() -> int:
 
     application.aboutToQuit.connect(controller.shutdown)
     logger.info("application_started version=%s", __version__)
+    if os.environ.get("SETTIMER_STARTUP_CHECK") == "1":
+        QTimer.singleShot(0, application.quit)
     return application.exec()
 
 

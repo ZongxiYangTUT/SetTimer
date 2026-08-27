@@ -33,6 +33,9 @@ class FakeApplication:
     def exec(self) -> int:
         return 27
 
+    def quit(self) -> None:
+        pass
+
 
 class FakeController:
     last_instance: FakeController | None = None
@@ -182,6 +185,25 @@ class MainTests(unittest.TestCase):
         controller = FakeController.last_instance
         assert controller is not None
         self.assertEqual(controller.shutdown_count, 1)
+
+    def test_startup_check_quits_after_qml_loads(self) -> None:
+        with (
+            patch.dict("os.environ", {"SETTIMER_STARTUP_CHECK": "1"}, clear=False),
+            patch.object(main_module, "QCoreApplication", FakeCoreApplication),
+            patch.object(main_module, "QQuickStyle", FakeQuickStyle),
+            patch.object(main_module, "QApplication", FakeApplication),
+            patch.object(main_module, "AppController", FakeController),
+            patch.object(main_module, "QQmlApplicationEngine", FakeEngine),
+            patch.object(main_module, "QIcon", fake_icon),
+            patch.object(main_module, "_install_application_font"),
+            patch.object(main_module.QTimer, "singleShot") as single_shot,
+        ):
+            result = main_module.main()
+
+        self.assertEqual(result, 27)
+        application = FakeApplication.last_instance
+        assert application is not None
+        single_shot.assert_called_once_with(0, application.quit)
 
     def test_application_font_installation_handles_success_and_failures(self) -> None:
         application = FakeGuiApplication()
